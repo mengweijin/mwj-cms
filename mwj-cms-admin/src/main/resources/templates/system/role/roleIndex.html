@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <table id="table" lay-filter="table-filter"></table>
+
+    <script id="headBarTpl" type="text/html">
+        <div class="layui-btn-container">
+            <a class="mwj-mgr" href="javascript:" lay-event="add" title="添加">
+                            <span class="layui-btn layui-btn-sm layui-btn-normal">
+                                <i class="layui-icon layui-icon-add-1"></i>添加
+                            </span>
+            </a>
+        </div>
+    </script>
+
+    <script id="switchTpl" type="text/html">
+        <input type="checkbox"
+               name="roleStatus"
+               value="{{d.id}}"
+               lay-skin="switch"
+               lay-text="正常|停用"
+               lay-filter="switch-filter" {{ d.status == '0' ? 'checked' : '' }}>
+    </script>
+
+    <script id="toolbarTpl" type="text/html">
+        <div class="layui-btn-container">
+            <a class="mwj-mgr" href="javascript:" lay-event="authorization" title="授权">
+                <i class="layui-icon layui-icon-auz" style="color: #FFB800; font-size: 20px;"></i>
+            </a>
+            <a class="mwj-mgr" href="javascript:" lay-event="edit" title="编辑">
+                <i class="layui-icon layui-icon-edit" style="color: #1E9FFF; font-size: 20px;"></i>
+            </a>
+            <a class="mwj-mgr" href="javascript:" lay-event="delete" title="删除">
+                <i class="layui-icon layui-icon-delete" style="color: #FF5722; font-size: 20px;"></i>
+            </a>
+        </div>
+    </script>
+
+    <script type="text/javascript" th:inline="javascript">
+        $(function () {
+            let table = layui.table, form = layui.form;
+
+            let tableIns = table.render({
+                elem: '#table' //指定原始表格元素选择器（推荐id选择器）
+                ,url: 'sys/role/queryPage'
+                ,where: {_csrf: $("meta[name='_csrf']").attr("content")}
+                ,method: 'post'
+                //,height: 'full-20' //高度最大化减去差值
+                ,loading: true //是否显示加载条
+                ,toolbar: '#headBarTpl' // true/'default'/'<div>xxx</div>'/'#toolbarDemo'
+                ,defaultToolbar: ['filter', 'print', 'exports']
+                ,page: {  // 分页,可包含 laypage 组件所有支持的参数（jump、elem除外）
+                    theme: '#1E9FFF'
+                    ,limit: 20  //默认采用10条
+                    ,limits: [20, 30, 50]    // 每页条数[10, 20, 30]等
+                }
+                ,cols:  [ // 表头，标题栏。这里的上下两个中括号一定要分开写，如果写在一起，就被thymeleaf解释为内联表达式了。
+                    [
+                        //{type: 'radio',               fixed: 'left',          hide:true}
+                        //{type: 'checkbox',      fixed: 'left',          hide:false}
+                        {field: 'id',      title: '编号',               hide:true}
+                        ,{field: 'name',     title: '名称', minWidth:120,  sort:false}
+                        ,{field: 'sort',  title: '排序号', width:100,  sort:false, align:'center'}
+                        ,{field: 'status',  title: '状态', width:120,   sort:false, align:'center', templet: '#switchTpl'}
+                        ,{field: 'createUserNick', title: '创建者', minWidth:100, sort:false}
+                        ,{field: 'createTime',    title: '创建时间',   minWidth:180, sort:true}
+                        ,{field: 'updateUserNick', title: '更新者', minWidth:100,  sort:false}
+                        ,{field: 'updateTime',   title: '更新时间',   minWidth:180, sort:true}
+                        ,{field: 'remark',  title: '备注',   minWidth:180, sort:true}
+                        //下面这里的toolbar值是模板元素的选择器
+                        ,{fixed: 'right', title: '操作', align:'center', width: 150, toolbar: '#toolbarTpl'}
+                    ]
+                ]
+            });
+
+            //监听头部工具栏事件
+            table.on('toolbar(table-filter)', function(obj){
+                let curr = obj.config.page.curr;
+                switch (obj.event) {
+                    case 'add':
+                        editPage("角色新增", "/sys/role/add");
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+            //监听工具条
+            table.on('tool(table-filter)', function(obj){
+                let row = obj.data;
+                switch (obj.event) {
+                    case 'authorization':
+                        let index = layer.open({
+                            type: 2
+                            ,title: '角色授权'
+                            ,shadeClose: false
+                            ,shade: [0.5, "#393D49"]
+                            ,maxmin: true
+                            ,area: ["1000px", "600px"]
+                            ,resize: false
+                            ,content: '/sys/menu/authorizationTree?roleId=' + row.id
+                        });
+                        // 全屏显示
+                        layer.full(index);
+                        break;
+                    case 'edit':
+                        editPage("角色编辑", "/sys/role/edit/" + row.id);
+                        break;
+                    case 'delete':
+                        let warnMsg = '确认删除【' + row.name + '】吗？';
+                        layer.confirm(warnMsg, function(index){
+                            $.post("/sys/role/delete/" + row.id, null, function (result) {
+                                layer.close(index);
+                                mwj.msg(result);
+
+                                if(result.code === 0){
+                                    obj.del(); // 删除对应行（tr）的DOM结构，并更新缓存
+                                }
+                            });
+                        });
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+            form.on('switch(switch-filter)', function(data){
+                let deptId = data.value;
+                let status = data.elem.checked ? '0' : '1';
+                $.post("/sys/role/switchStatus", {id: deptId, status: status}, function (result) {
+                    mwj.msg(result);
+                });
+
+                //console.log(data.elem); //得到checkbox原始DOM对象
+                //console.log(data.elem.checked); //开关是否开启，true或者false
+                //console.log(data.value); //开关value值，也可以通过data.elem.value得到
+                //console.log(data.othis); //得到美化后的DOM对象
+
+            });
+
+            /**
+             * 重载表格
+             * @param curr 当前页
+             * @param params 参数对象{}
+             */
+            function reloadTable(curr, params) {
+                curr  = curr ? curr : 1;
+                params = params ? params : {};
+                params._csrf = $("meta[name='_csrf']").attr("content");
+                tableIns.reload({
+                    where: params
+                    ,page: {
+                        theme: '#1E9FFF',
+                        curr: curr //重新从第 curr 页开始
+                    }
+                });
+            }
+
+            /**
+             * 编辑弹框
+             * @param title
+             * @param url
+             * @returns {*}
+             */
+            function editPage(title, url) {
+                return layer.open({
+                    type: 2
+                    ,title: title
+                    ,shadeClose: false
+                    ,shade: [0.5, "#393D49"]
+                    ,maxmin: true
+                    ,area: ["600px", "430px"]
+                    ,resize: false
+                    ,content: url
+                });
+            }
+
+        });
+    </script>
+</body>
+
+</html>

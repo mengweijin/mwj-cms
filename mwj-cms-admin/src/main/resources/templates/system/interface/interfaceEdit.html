@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head th:include="include :: header"></head>
+<body>
+
+    <div class="layui-container" style="padding: 20px 20px;">
+        <form class="layui-form layui-form-pane" method="post" action="">
+
+            <input name="id" type="hidden" readonly="true" th:if="${not #strings.isEmpty(interface.id)}"
+                   placeholder="" autocomplete="off" class="layui-input"
+                   th:value="${interface.id}"/>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">名称</label>
+                <div class="layui-input-block">
+                    <input name="name" type="text" required="" lay-verify="required|name"
+                           placeholder="" autocomplete="off" class="layui-input"
+                           th:value="${interface.name}"/>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">接口编码</label>
+                    <div class="layui-input-block">
+                        <input name="keyCode" type="text" required="" lay-verify="required"
+                               placeholder="" autocomplete="off" class="layui-input"
+                               th:value="${interface.keyCode}"/>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">接口类型</label>
+                    <div class="layui-input-block">
+                        <select name="type" lay-search disabled
+                                th:with="interfTypeArray=${@interfaceService.getInterfaceTypes()}">
+                            <option value="">请选择</option>
+                            <option th:each="interfType : ${interfTypeArray}"
+                                    th:value="${interfType.name()}"
+                                    th:text="${interfType.getDesc()}"
+                                    th:selected="${interface.type.name() == interfType.name()}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">请求URL</label>
+                <div class="layui-input-block">
+                    <input name="url" type="text" required="" lay-verify="required"
+                           placeholder="" autocomplete="off" class="layui-input"
+                           th:value="${interface.url}"/>
+                </div>
+            </div>
+
+            <div class="layui-form-item" th:if="${interface.type.getValue() == 1 or interface.type.getValue() == 2}">
+                <div class="layui-inline">
+                    <label class="layui-form-label">命名空间</label>
+                    <div class="layui-input-block">
+                        <input name="url" type="text"
+                               placeholder="" autocomplete="off" class="layui-input"
+                               th:value="${interface.nameSpace}"/>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">方法名称</label>
+                    <div class="layui-input-block">
+                        <input name="methodName" type="text"
+                               placeholder="" autocomplete="off" class="layui-input"
+                               th:value="${interface.methodName}"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item" th:if="${interface.type.getValue() == 3}">
+                <div class="layui-inline">
+                    <label class="layui-form-label">请求类型</label>
+                    <div class="layui-input-block">
+                        <select name="requestType" lay-search>
+                            <option value="">请选择</option>
+                            <option value="GET" th:selected="${interface.requestType == 'GET'}">GET</option>
+                            <option value="POST" th:selected="${interface.requestType == 'POST'}">POST</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">备注</label>
+                <div class="layui-input-block">
+                    <textarea name="remark" class="layui-textarea"
+                              th:utext="${interface.remark}">
+                    </textarea>
+                </div>
+            </div>
+
+            <!--/* 按钮组容器 */-->
+            <div class="layui-btn-container" style="text-align: center; padding-top: 10px; border: 1px solid #eeeeee;">
+                <button type="submit" lay-submit class="layui-btn layui-btn-normal mwj-btn-width" lay-filter="submit-filter">提交</button>
+                <button type="button" id="cancel" class="layui-btn layui-btn-normal mwj-btn-width">取消</button>
+            </div>
+        </form>
+    </div>
+
+    <div th:include="include::footer"></div>
+    <script type="text/javascript" th:inline="javascript">
+
+        $(function () {
+            /* 自定义表单验证 */
+            let form = layui.form;
+            form.verify({
+                // value：表单的值、item：表单的DOM对象
+                name: function(value, item){
+                    if(!new RegExp("^[a-zA-Z0-9_\u4e00-\u9fa5\\s·]+$").test(value)){
+                        return '名称不能包含特殊字符';
+                    }
+                    if(/(^\_)|(\__)|(\_+$)/.test(value)){
+                        return '名称首尾不能出现下划线\'_\'';
+                    }
+                    if(/^\d+\d+\d$/.test(value)){
+                        return '名称不能全为数字';
+                    }
+                    if(value.length > 30){
+                        return '名称长度不能大于30';
+                    }
+                }
+            });
+
+            /* 提交按钮 */
+            form.on('submit(submit-filter)', function(data){
+                //console.log(data.elem); //被执行事件的元素DOM对象，一般为button对象
+                //console.log(data.form); //被执行提交的form对象，一般在存在form标签时才会返回
+                //console.log(data.field); //当前容器的全部表单字段，名值对形式：{name: value}
+
+                $.post('/sys/interface/update', data.field, function (result) {
+                    mwj.msg(result);
+                    if(result.code == 0){
+                        // 关闭弹出层
+                        mwj.closeLayer();
+
+                    }
+                });
+                return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+            });
+
+            mwj.addRedStar();
+
+            $("#cancel").on("click", function () {
+                mwj.closeLayer();
+            });
+
+        });
+    </script>
+</body>
+
+</html>

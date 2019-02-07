@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mwj.cms.system.mapper.RoleMapper">
+
+    <select id="selectPageVO" resultType="java.util.Map">
+        select
+        r.id,
+        r.name,
+        r.sort,
+        r.status,
+        r.create_by,
+        r.create_time,
+        r.update_by,
+        r.update_time,
+        r.remark,
+        uc.nick as create_user_nick,
+        uu.nick as update_user_nick
+        from sys_role r
+        left join sys_user uc on r.create_by=uc.id
+        left join sys_user uu on r.update_by=uu.id
+        <where>
+            <if test="role.id != null">
+                and r.id = #{role.id}
+            </if>
+            <if test="role.name != null and role.name != ''">
+                and r.name like concat('%',#{role.name},'%')
+            </if>
+            <if test="role.sort != null">
+                and r.sort = #{role.sort}
+            </if>
+            <if test="role.status != null">
+                and r.status = #{role.status}
+            </if>
+            <if test="role.createBy != null">
+                and r.create_by = #{role.createBy}
+            </if>
+            <if test="role.createTime != null">
+                and r.create_time = #{role.createTime}
+            </if>
+            <if test="role.updateBy != null">
+                and r.update_by = #{role.updateBy}
+            </if>
+            <if test="role.updateTime != null">
+                and r.update_time = #{role.updateTime}
+            </if>
+            <if test="role.remark != null and role.remark != ''">
+                and r.remark = #{role.remark}
+            </if>
+        </where>
+    </select>
+
+</mapper>

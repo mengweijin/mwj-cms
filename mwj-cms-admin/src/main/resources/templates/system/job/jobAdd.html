@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <div class="layui-container" style="padding: 20px 20px;">
+        <form class="layui-form layui-form-pane" method="post" action="">
+
+            <input name="id" type="hidden" th:if="${not #strings.isEmpty(job.id)}"
+                   placeholder="" autocomplete="off" class="layui-input"
+                   th:value="${job.id}"/>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">名称</label>
+                <div class="layui-input-block">
+                    <input name="name" type="text" required="" lay-verify="required|name"
+                           placeholder="名称" autocomplete="off" class="layui-input"
+                           th:value="${job.name}"/>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">JOB类型</label>
+                <div class="layui-input-inline">
+                    <select name="jobTypeId" lay-search lay-verify="required"
+                            th:with="jobTypeArray=${@jobTypeService.getJobTypeList()}">
+                        <option value="">请选择</option>
+                        <option th:each="jobType : ${jobTypeArray}"
+                                th:value="${jobType.getId()}"
+                                th:text="${jobType.getName()}"
+                                th:selected="${job.jobTypeId == jobType.getId()}">
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">调度时间</label>
+                <div class="layui-input-inline">
+                    <select name="cron" lay-search lay-verify="required"
+                            th:with="jobCronArray=${@jobCronService.getJobCronList()}">
+                        <option value="">请选择</option>
+                        <option th:each="jobCron : ${jobCronArray}"
+                                th:value="${jobCron.getCron()}"
+                                th:text="${jobCron.getName()}"
+                                th:selected="${job.cron == jobCron.getCron()}">
+                        </option>
+                    </select>
+                </div>
+            </div>
+<!--
+            <div class="layui-form-item">
+                <label class="layui-form-label">调度时间</label>
+                <div class="layui-input-inline">
+                    <input name="cron" class="layui-input" lay-verify="required|cron"
+                    th:value="${job.cron}"/>
+                </div>
+                <div class="layui-form-mid layui-word-aux">
+                    填写cron表达式。格式：{秒数} {分钟} {小时} {日期} {月份} {星期} {年份(可为空)}
+                </div>
+            </div>
+-->
+
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">Misfire策略</label>
+                    <div class="layui-input-inline">
+                        <select name="misfirePolicy" lay-search lay-verify="required"
+                                lay-filter="misfire-filter"
+                                th:with="misfireArray=${@jobService.getMisfirePolicies()}">
+                            <option value="">请选择</option>
+                            <option th:each="misfirePolicy : ${misfireArray}"
+                                    th:value="${misfirePolicy.name()}"
+                                    th:text="${misfirePolicy.getDesc()}"
+                                    th:data-detail="${misfirePolicy.getDetail()}"
+                                    th:selected="${misfirePolicy.name() == job.misfirePolicy.name()}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="layui-form-mid layui-word-aux"></div>
+                </div>
+
+            </div>
+
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">备注</label>
+                <div class="layui-input-block">
+                    <textarea name="remark" class="layui-textarea"
+                              th:utext="${job.remark}">
+                    </textarea>
+                </div>
+            </div>
+
+            <!--/* 按钮组容器 */-->
+            <div class="layui-btn-container" style="text-align: center; padding-top: 10px; border: 1px solid #eeeeee;">
+                <button type="submit" lay-submit class="layui-btn layui-btn-normal mwj-btn-width" lay-filter="submit-filter">提交</button>
+                <button type="button" id="cancel" class="layui-btn layui-btn-normal mwj-btn-width">取消</button>
+            </div>
+        </form>
+    </div>
+
+    <script type="text/javascript" th:inline="javascript">
+        $(function () {
+            /* 自定义表单验证 */
+            let form = layui.form;
+            form.verify({
+                // value：表单的值、item：表单的DOM对象
+                name: function(value, item){
+                    if(!new RegExp("^[a-zA-Z0-9_\u4e00-\u9fa5\\s·]+$").test(value)){
+                        return '名称不能包含特殊字符';
+                    }
+                    if(/(^\_)|(\__)|(\_+$)/.test(value)){
+                        return '名称首尾不能出现下划线\'_\'';
+                    }
+                    if(/^\d+\d+\d$/.test(value)){
+                        return '名称不能全为数字';
+                    }
+                    if(value.length > 30){
+                        return '名称长度不能大于30';
+                    }
+                }
+                ,cron: function (value, item) {
+                    let msg;
+                    $.ajax({
+                        async:false,
+                        url:"/sys/job/validCron?cron=" + value,
+                        success:function (isValidCron) {
+                            if(!isValidCron) {
+                                msg='不是有效的cron表达式';
+                            }
+                        }
+                    });
+                    return msg;
+                }
+            });
+
+            if([[${job.misfirePolicy}]]){
+                let $select = $("form select[name='misfirePolicy']");
+                let $selectedOption = $select.children("option:selected");
+                $select.parent("div").next().html($selectedOption.data("detail"));
+            }
+            form.on('select(misfire-filter)', function(data){
+                //console.log(data.elem); //得到select原始DOM对象
+                //console.log(data.value); //得到被选中的值
+                //console.log(data.othis); //得到美化后的DOM对象
+                let $select = $("form select[name='misfirePolicy']");
+                if(!data.value){
+                    $select.parent("div").next().html("");
+                    return;
+                }
+
+                let $options = $(data.elem).children("option");
+                $options.each(function (index, item) {
+                    if(data.value == $(item).val()){
+                        $select.parent("div").next().html($(item).data("detail"));
+                    }
+                });
+            });
+
+            /* 提交按钮 */
+            form.on('submit(submit-filter)', function(data){
+                //console.log(data.elem); //被执行事件的元素DOM对象，一般为button对象
+                //console.log(data.form); //被执行提交的form对象，一般在存在form标签时才会返回
+                //console.log(data.field); //当前容器的全部表单字段，名值对形式：{name: value}
+
+                let url = data.field.id ? '/sys/job/update' : '/sys/job/insert';
+                $.post(url, data.field, function (result) {
+                    mwj.msgAndLoadPage(result, "#content", "/sys/job/index");
+                });
+                return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+            });
+
+            mwj.addRedStar();
+
+            form.render();
+
+            $("#cancel").on("click", function () {
+                mwj.loadPage("#content", "/sys/job/index");
+            });
+        });
+    </script>
+</body>
+
+</html>

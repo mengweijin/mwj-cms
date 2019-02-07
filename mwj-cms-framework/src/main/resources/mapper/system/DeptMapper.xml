@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mwj.cms.system.mapper.DeptMapper">
+
+    <select id="selectVO" resultType="java.util.Map">
+        select
+        dept.id,
+        dept.parent_id,
+        dept.name,
+        dept.order_num,
+        dept.status,
+        dept.create_by,
+        dept.create_time,
+        dept.update_by,
+        dept.update_time,
+        dp.name as parent_name,
+        uc.nick as create_user_nick,
+        uu.nick as update_user_nick
+        from sys_dept dept
+        left join sys_dept dp on dept.parent_id=dp.id
+        left join sys_user uc on dept.create_by=uc.id
+        left join sys_user uu on dept.update_by=uu.id
+        <where>
+            <if test="id != null">
+                and dept.id = #{id}
+            </if>
+            <if test="parentId != null">
+                and dept.parent_id = #{parentId}
+            </if>
+            <if test="name != null and name != ''">
+                and dept.name like concat('%',#{name},'%')
+            </if>
+            <if test="orderNum != null">
+                and dept.order_num = #{orderNum}
+            </if>
+            <if test="status != null">
+                and dept.status = #{status}
+            </if>
+            <if test="createBy != null">
+                and dept.create_by = #{createBy}
+            </if>
+            <if test="createTime != null">
+                and dept.create_time = #{createTime}
+            </if>
+            <if test="updateBy != null">
+                and dept.update_by = #{updateBy}
+            </if>
+            <if test="updateTime != null">
+                and dept.update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+</mapper>

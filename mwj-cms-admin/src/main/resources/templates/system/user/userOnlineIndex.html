@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <div class="layui-container mwj-height-full" style="width: 100%;">
+
+        <table id="table" lay-filter="table-filter"></table>
+
+        <script id="toolbarTpl" type="text/html">
+            <div class="layui-btn-container">
+                <a href="javascript:" lay-event="invalidateSession" title="强制下线">
+                    <span class="layui-btn layui-btn-sm layui-btn-danger">强制下线</span>
+                </a>
+            </div>
+        </script>
+
+    </div>
+
+    <script type="text/javascript" th:inline="javascript">
+        $(function () {
+            let table = layui.table;
+
+            let tableIns = table.render({
+                elem: '#table' //指定原始表格元素选择器（推荐id选择器）
+                ,url: 'sys/user-online/queryPage'
+                ,where: {_csrf: $("meta[name='_csrf']").attr("content")}
+                ,method: 'post'
+                //,height: 'full-20' //高度最大化减去差值
+                ,loading: true //是否显示加载条
+                ,toolbar: true // true/'default'/'<div>xxx</div>'/'#toolbarDemo'
+                ,defaultToolbar: ['filter', 'print', 'exports']
+                ,page: {  // 分页,可包含 laypage 组件所有支持的参数（jump、elem除外）
+                    theme: '#1E9FFF'
+                    ,limit: 10  //默认采用10条
+                    ,limits: [10, 50, 100, 200]    // 每页条数[10, 20, 30]等
+                }
+                ,cols:  [ // 表头，标题栏。这里的上下两个中括号一定要分开写，如果写在一起，就被thymeleaf解释为内联表达式了。
+                    [
+                        //{type: 'radio',               fixed: 'left',          hide:true}
+                        //{type: 'checkbox',      fixed: 'left',          hide:false}
+                        {field: 'id',      title: '编号',               hide:true}
+                        ,{field: 'loginName',   title: '登录账号',  minWidth:120, sort:false}
+                        ,{field: 'nick',   title: '姓名',  minWidth:120, sort:false}
+                        ,{field: 'sex',   title: '性别',  minWidth:120, sort:false
+                            ,templet: function (d) {
+                                switch (d.sex) {
+                                    case 0:
+                                        return '男';
+                                        break;
+                                    case 1:
+                                        return '女';
+                                        break;
+                                    default:
+                                        return '';
+                                }
+
+                            }
+                        }
+                        ,{field: 'operateTime',          title: '登录时间',   minWidth:180,       sort:true}
+                        ,{field: 'os',  title: '操作系统类型', minWidth:180,   sort:false}
+                        ,{field: 'browser',  title: '浏览器类型', minWidth:180,  sort:false}
+                        ,{field: 'loginLocation',     title: '登录地点', minWidth:100,         sort:false}
+                        ,{fixed: 'right', title: '操作', align:'center', minWidth: 130, toolbar: '#toolbarTpl'}
+                    ]
+                ]
+            });
+
+            //监听工具条
+            table.on('tool(table-filter)', function(obj){
+                let row = obj.data;
+                switch (obj.event) {
+                    case 'invalidateSession':
+                        layer.confirm('确认强制下线【' + row.nick + '】用户吗？', function(index){
+                            $.post("/sys/user-online/invalidateSession/" + row.loginName, null, function (result) {
+                                layer.close(index);
+                                mwj.msg(result);
+
+                                if(result.code === 0){
+                                    obj.del(); // 删除对应行（tr）的DOM结构，并更新缓存
+                                }
+                            });
+                        });
+
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+            /**
+             * 重载表格
+             * @param curr 当前页
+             * @param params 参数对象{}
+             */
+            function reloadTable(curr, params) {
+                curr  = curr ? curr : 1;
+                params = params ? params : {};
+                params._csrf = $("meta[name='_csrf']").attr("content");
+                tableIns.reload({
+                    where: params
+                    ,page: {
+                        theme: '#1E9FFF',
+                        curr: curr //重新从第 curr 页开始
+                    }
+                });
+            }
+
+        });
+    </script>
+</body>
+
+</html>

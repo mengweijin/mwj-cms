@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <div class="layui-container mwj-height-full" style="width: 100%;">
+
+        <form class="layui-form layui-form-pane" method="post" action="">
+            <div class="layui-form-item" style="margin-bottom: 0px;">
+                <div class="layui-inline">
+                    <label class="layui-form-label">模块</label>
+                    <div class="layui-input-inline">
+                        <input name="title" type="text" autocomplete="on" class="layui-input"/>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">请求URL</label>
+                    <div class="layui-input-inline">
+                        <input name="url" type="text" autocomplete="on" class="layui-input"/>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">请求方法</label>
+                    <div class="layui-input-inline">
+                        <input name="method" type="text" autocomplete="on" class="layui-input"/>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">日志类型</label>
+                    <div class="layui-input-inline">
+                        <select name="type" lay-search th:with="logTypeArray=${@logService.getLogTypes()}">
+                            <option value="">请选择</option>
+                            <option th:each="logType : ${logTypeArray}"
+                                    th:value="${logType.name()}"
+                                    th:text="${logType.getDesc()}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">操作状态</label>
+                    <div class="layui-input-inline">
+                        <select name="status" lay-search th:with="resultStatusArray=${@commonService.getResultStatuses()}">
+                            <option value="">请选择</option>
+                            <option th:each="resultStatus : ${resultStatusArray}"
+                                    th:value="${resultStatus.name()}"
+                                    th:text="${resultStatus.getDesc()}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">操作者</label>
+                    <div class="layui-input-inline">
+                        <select name="operator" lay-search th:with="userList=${@userService.list()}">
+                            <option value="">请选择</option>
+                            <option th:each="user : ${userList}" th:value="${user.id}" th:text="${user.nick}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">操作日期</label>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" id="operTime" name="operTime" placeholder="yyyy-MM-dd">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <!--/* 按钮组容器 */-->
+                    <div class="layui-btn-container">
+                        <button lay-submit class="layui-btn layui-btn-normal" style="width: 110px;" lay-filter="search-filter">搜索</button>
+                        <input id="resetBtn" type="reset" class="layui-btn layui-btn-normal" style="width: 110px;"/>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+
+        <table id="table" lay-filter="table-filter"></table>
+
+        <script id="headBarTpl" type="text/html">
+            <div class="layui-btn-container">
+                <a class="mwj-mgr" href="javascript:" lay-event="delete" title="批量删除">
+                    <span class="layui-btn layui-btn-sm layui-btn-danger">批量删除</span>
+                </a>
+            </div>
+        </script>
+    </div>
+
+    <script type="text/javascript" th:inline="javascript">
+        $(function () {
+            let table = layui.table, form = layui.form, laydate = layui.laydate;
+
+            /* 日期 */
+            laydate.render({
+                elem: '#operTime'
+                ,type: 'date'  // 控件选择类型,默认date,可选time,datetime等
+                ,range: false  // 开启左右面板范围选择,默认false
+                ,format: 'yyyy-MM-dd' // 自定义格式,默认值yyyy-MM-dd,可选'yyyy-MM-dd HH:mm:ss'等格式
+                //,value: [[${operTime}]] //初始值，支持传入符合format参数设定的日期格式字符(如：'2018-08-18')，或者 默认值new Date()
+                //,min: 0
+                //,min: '1900-1-1'    // min/max - 最小/大范围内的日期时间值,如：min: -7，即代表最小日期在7天前，正数代表若干天后
+                ,max: 0
+                //,max: '2099-12-31'  // 类型：string，默认值：min: '1900-1-1'、max: '2099-12-31',  max: 7 //7天后
+                ,calendar: true      // 是否显示公历节日,国际版不会显示。
+            });
+
+            let tableIns = table.render({
+                elem: '#table' //指定原始表格元素选择器（推荐id选择器）
+                ,url: 'sys/log/queryPage'
+                ,where: {_csrf: $("meta[name='_csrf']").attr("content")}
+                ,method: 'post'
+                //,height: 'full-20' //高度最大化减去差值
+                ,loading: true //是否显示加载条
+                ,toolbar: '#headBarTpl' // true/'default'/'<div>xxx</div>'/'#toolbarDemo'
+                ,defaultToolbar: ['filter', 'print', 'exports']
+                ,page: {  // 分页,可包含 laypage 组件所有支持的参数（jump、elem除外）
+                    theme: '#1E9FFF'
+                    ,limit: 10  //默认采用10条
+                    ,limits: [10, 100, 300, 500, 1000]    // 每页条数[10, 20, 30]等
+                }
+                ,cols:  [ // 表头，标题栏。这里的上下两个中括号一定要分开写，如果写在一起，就被thymeleaf解释为内联表达式了。
+                    [
+                        //{type: 'radio',               fixed: 'left',          hide:true}
+                        {type: 'checkbox',      fixed: 'left',          hide:false}
+                        ,{field: 'id',      title: '编号',               hide:true}
+                        ,{field: 'title',   title: '模块',  minWidth:120, sort:false}
+                        ,{field: 'url',     title: '请求URL', minWidth:180,  sort:false}
+                        ,{field: 'method',  title: '请求方法', minWidth:180,  sort:false}
+                        ,{field: 'reqParam',  title: '请求参数', minWidth:180,  sort:false}
+                        ,{field: 'type',     title: '日志类型', width:100,  sort:false, align:'center'
+                            ,templet: function (d) {
+                                let $type =  $('<span class="layui-btn layui-btn-radius layui-btn-xs">' + d.type + '</span>');
+                                switch (d.type) {
+                                    case '查询':
+                                        break;
+                                    case '新增':
+                                        $type.addClass("layui-btn-normal");
+                                        break;
+                                    case '修改':
+                                        $type.addClass("layui-btn-warm");
+                                        break;
+                                    case '删除':
+                                        $type.addClass("layui-btn-danger");
+                                        break;
+                                    default:
+                                        $type.addClass("layui-btn-primary");
+                                        break;
+                                }
+                                return $type.get(0).outerHTML;
+                            }
+                        }
+                        ,{field: 'status',  title: '操作状态', width:120, sort:true, align:'center'
+                            ,templet: function (d) {
+                                let $status = $('<span class="layui-btn layui-btn-radius layui-btn-xs">' + d.status + '</span>');
+                                if(d.status != '成功'){
+                                    $status.addClass("layui-btn-danger");
+                                }
+
+                                return $status.get(0).outerHTML;
+                            }
+                        }
+                        ,{field: 'operatorNick',     title: '操作者', width:100,         sort:false}
+                        ,{field: 'operTime',          title: '操作时间',   minWidth:180,       sort:true}
+                        ,{field: 'operLocation',  title: '操作地点',   width:120,       sort:true}
+                        ,{field: 'errorMsg',  title: '错误信息',   minWidth:180, sort:true,  hide:true}
+                    ]
+                ]
+            });
+
+            //监听头部工具栏事件
+            table.on('toolbar(table-filter)', function(obj){
+                let curr = obj.config.page.curr;
+                switch (obj.event) {
+                    case 'delete':
+                        // 获取被选中的行对象
+                        let rowArray = table.checkStatus(obj.config.id).data;
+                        if(rowArray.length == 0){
+                            mwj.warn("请先选中至少一条将要删除的数据！");
+                        } else {
+                            let ids = [];
+                            $.each(rowArray, function(index, item){
+                                ids.push(item.id);
+                            });
+                            layer.confirm('确认删除已选择的数据吗？', function(index){
+                                $.post("/sys/log/batchDelete", {ids: ids}, function (result) {
+                                    layer.close(index);
+                                    mwj.msg(result);
+
+                                    // 刷新表格
+                                    reloadTable(curr);
+                                });
+                            });
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+            /**
+             * 重载表格
+             * @param curr 当前页
+             * @param params 参数对象{}
+             */
+            function reloadTable(curr, params) {
+                curr  = curr ? curr : 1;
+                params = params ? params : {};
+                params._csrf = $("meta[name='_csrf']").attr("content");
+                tableIns.reload({
+                    where: params
+                    ,page: {
+                        theme: '#1E9FFF',
+                        curr: curr //重新从第 curr 页开始
+                    }
+                });
+            }
+
+            /* 监听表单提交——查询按钮——重载表格 */
+            form.on('submit(search-filter)', function(data){
+                //console.log(data.elem); //被执行事件的元素DOM对象，一般为button对象
+                //console.log(data.form); //被执行提交的form对象，一般在存在form标签时才会返回
+                //console.log(data.field); //当前容器的全部表单字段，名值对形式：{name: value}
+
+                if(data.field.operTime){
+                    data.field.operTime += ' 00:00:00';
+                }
+                //执行重载
+                reloadTable(1, data.field);
+                return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+            });
+
+            // 显式渲染，否则select无法被渲染
+            form.render();
+
+        });
+    </script>
+</body>
+
+</html>

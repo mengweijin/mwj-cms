@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mwj.cms.system.mapper.LoginLogMapper">
+
+    <select id="selectPageVO" resultType="java.util.Map">
+        select
+        id,
+        login_name,
+        login_type,
+        ip,
+        login_location,
+        browser,
+        os,
+        status,
+        operate_time,
+        msg
+        from sys_login_log
+        <where>
+            <if test="loginLog.id != null">
+                and id = #{loginLog.id}
+            </if>
+            <if test="loginLog.loginName != null and loginLog.loginName != ''">
+                and login_name like concat('%',#{loginLog.loginName},'%')
+            </if>
+            <if test="loginLog.loginType != null">
+                and login_type = #{loginLog.loginType}
+            </if>
+            <if test="loginLog.ip != null and loginLog.ip != ''">
+                and ip = #{loginLog.ip}
+            </if>
+            <if test="loginLog.loginLocation != null and loginLog.loginLocation != ''">
+                and login_location = #{loginLog.loginLocation}
+            </if>
+            <if test="loginLog.browser != null and loginLog.browser != ''">
+                and browser = #{loginLog.browser}
+            </if>
+            <if test="loginLog.os != null and loginLog.os != ''">
+                and os = #{loginLog.os}
+            </if>
+            <if test="loginLog.status != null">
+                and status = #{loginLog.status}
+            </if>
+            <if test="loginLog.operateTime != null">
+                and DATE_FORMAT(operate_time,'%Y-%m-%d')=LEFT(#{loginLog.operateTime}, 10)
+            </if>
+            <if test="loginLog.msg != null and loginLog.msg != ''">
+                and msg = #{msg}
+            </if>
+        </where>
+        order by operate_time desc
+    </select>
+</mapper>

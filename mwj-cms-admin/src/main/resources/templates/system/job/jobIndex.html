@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <form class="layui-form layui-form-pane" method="post" action="">
+        <div class="layui-form-item" style="margin-bottom: 0px;">
+            <div class="layui-inline">
+                <label class="layui-form-label">名称</label>
+                <div class="layui-input-inline">
+                    <input name="name" type="text" autocomplete="on" class="layui-input"/>
+                </div>
+            </div>
+
+            <div class="layui-inline">
+                <label class="layui-form-label">JOB类型</label>
+                <div class="layui-input-inline">
+                    <select name="jobTypeId" lay-search th:with="jobTypeArray=${@jobTypeService.getJobTypeList()}">
+                        <option value="">请选择</option>
+                        <option th:each="jobType : ${jobTypeArray}"
+                                th:value="${jobType.getId()}"
+                                th:text="${jobType.getName()}">
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-inline">
+                <label class="layui-form-label">Misfire策略</label>
+                <div class="layui-input-inline">
+                    <select name="misfirePolicy" lay-search
+                            th:with="misfireArray=${@jobService.getMisfirePolicies()}">
+                        <option value="">请选择</option>
+                        <option th:each="misfirePolicy : ${misfireArray}"
+                                th:value="${misfirePolicy.name()}"
+                                th:text="${misfirePolicy.getDesc()}">
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-inline">
+                <label class="layui-form-label">状态</label>
+                <div class="layui-input-inline">
+                    <select name="status" lay-search th:with="statusArray=${@jobService.getJobSchedulerStatus()}">
+                        <option value="">请选择</option>
+                        <option th:each="status : ${statusArray}"
+                                th:value="${status.name()}"
+                                th:text="${status.getDesc()}">
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-inline">
+                <!--/* 按钮组容器 */-->
+                <div class="layui-btn-container">
+                    <button lay-submit class="layui-btn layui-btn-normal" style="width: 110px;" lay-filter="search-filter">搜索</button>
+                    <input id="resetBtn" type="reset" class="layui-btn layui-btn-normal" style="width: 110px;"/>
+                </div>
+
+            </div>
+        </div>
+    </form>
+    <table id="table" lay-filter="table-filter"></table>
+
+    <script id="headBarTpl" type="text/html">
+        <div class="layui-btn-container">
+            <a class="mwj-mgr" href="javascript:" lay-event="add" title="添加">
+                <span class="layui-btn layui-btn-sm layui-btn-normal">
+                    <i class="layui-icon layui-icon-add-1"></i>添加
+                </span>
+            </a>
+        </div>
+    </script>
+
+    <script id="toolbarTpl" type="text/html">
+        <div class="layui-btn-container">
+            {{# if (d.status.indexOf('草稿') != -1){ }}
+                <a class="mwj-mgr" href="javascript:" lay-event="release" title="发布">
+                    <i class="layui-icon layui-icon-release" style="color: #1E9FFF; font-size: 20px;"></i>
+                </a>
+                <a class="mwj-mgr" href="javascript:" lay-event="edit" title="编辑">
+                    <i class="layui-icon layui-icon-edit" style="color: #1E9FFF; font-size: 20px;"></i>
+                </a>
+                <a class="mwj-mgr" href="javascript:" lay-event="delete" title="删除">
+                    <i class="layui-icon layui-icon-delete" style="color: #FF5722; font-size: 20px;"></i>
+                </a>
+            {{# } else if (d.status.indexOf('正常') != -1){ }}
+                <a class="mwj-mgr" href="javascript:" lay-event="log" title="Job执行日志">
+                    <i class="layui-icon layui-icon-form" style="color: #1E9FFF; font-size: 20px;"></i>
+                </a>
+                <a class="mwj-mgr" href="javascript:" lay-event="pause" title="暂停任务">
+                    <i class="layui-icon layui-icon-pause" style="color: #1E9FFF; font-size: 20px;"></i>
+                </a>
+                <a class="mwj-mgr" href="javascript:" lay-event="finish" title="结束任务">
+                    <i class="layui-icon layui-icon-ok-circle" style="color: #1E9FFF; font-size: 20px;"></i>
+                </a>
+            {{# } else if (d.status.indexOf('暂停') != -1){ }}
+                <a class="mwj-mgr" href="javascript:" lay-event="log" title="Job执行日志">
+                    <i class="layui-icon layui-icon-form" style="color: #1E9FFF; font-size: 20px;"></i>
+                </a>
+                <a class="mwj-mgr" href="javascript:" lay-event="resume" title="恢复任务">
+                    <i class="layui-icon layui-icon-refresh" style="color: #1E9FFF; font-size: 20px;"></i>
+                </a>
+
+                <a class="mwj-mgr" href="javascript:" lay-event="finish" title="结束任务">
+                    <i class="layui-icon layui-icon-ok-circle" style="color: #1E9FFF; font-size: 20px;"></i>
+                </a>
+            {{# } else if (d.status.indexOf('结束') != -1){ }}
+                <a class="mwj-mgr" href="javascript:" lay-event="log" title="Job执行日志">
+                    <i class="layui-icon layui-icon-form" style="color: #1E9FFF; font-size: 20px;"></i>
+                </a>
+                <a class="mwj-mgr" href="javascript:" lay-event="delete" title="删除">
+                    <i class="layui-icon layui-icon-delete" style="color: #FF5722; font-size: 20px;"></i>
+                </a>
+            {{# } }}
+        </div>
+    </script>
+
+    <script type="text/javascript" th:inline="javascript">
+        $(function () {
+            let table = layui.table, form = layui.form;
+
+            let tableIns = table.render({
+                elem: '#table' //指定原始表格元素选择器（推荐id选择器）
+                ,url: 'sys/job/queryPage'
+                ,where: {_csrf: $("meta[name='_csrf']").attr("content")}
+                ,method: 'post'
+                //,height: 'full-20' //高度最大化减去差值
+                ,loading: true //是否显示加载条
+                ,toolbar: '#headBarTpl' // true/'default'/'<div>xxx</div>'/'#toolbarDemo'
+                ,defaultToolbar: ['filter', 'print', 'exports']
+                ,page: {  // 分页,可包含 laypage 组件所有支持的参数（jump、elem除外）
+                    theme: '#1E9FFF'
+                    ,limit: 10  //默认采用10条
+                    ,limits: [10, 30, 50]    // 每页条数[10, 20, 30]等
+                }
+                ,cols:  [ // 表头，标题栏。这里的上下两个中括号一定要分开写，如果写在一起，就被thymeleaf解释为内联表达式了。
+                    [
+                        //{type: 'radio',               fixed: 'left',          hide:true}
+                        //{type: 'checkbox',      fixed: 'left',          hide:false}
+                        {field: 'id',      title: '编号',               hide:true}
+                        ,{field: 'jobTypeName', title: 'Job类型名称', minWidth:120,  sort:false}
+                        ,{field: 'name',     title: '名称', minWidth:120,  sort:false}
+                        ,{field: 'cron',  title: '调度时间', width:180,  sort:false}
+                        ,{field: 'misfirePolicy',  title: '错过调度时间的执行策略', width:200,  sort:false}
+                        ,{field: 'status',  title: '状态', width:100,  sort:false
+                        ,templet: function (d) {
+                            let $status =  $('<span class="layui-btn layui-btn-radius layui-btn-xs">' + d.status + '</span>');
+                            switch (d.status) {
+                                case '草稿':
+                                    $status.addClass("layui-btn-normal");
+                                    break;
+                                case '正常':
+                                    $status.addClass("layui-btn-warm");
+                                    break;
+                                case '暂停':
+                                    $status.addClass("layui-btn-danger");
+                                    break;
+                                case '结束':
+                                    break;
+                                default:
+                                    $status.addClass("layui-btn-primary");
+                                    break;
+                            }
+                            return $status.get(0).outerHTML;
+                        }
+                    }
+                        ,{field: 'createUserNick', title: '创建者', minWidth:100, sort:false}
+                        ,{field: 'createTime',    title: '创建时间',   minWidth:180, sort:true}
+                        ,{field: 'updateUserNick', title: '更新者', minWidth:100,  sort:false, hide:true}
+                        ,{field: 'updateTime',   title: '更新时间',   minWidth:180, sort:true, hide:true}
+                        ,{field: 'remark',  title: '备注',   minWidth:180, sort:true, hide:true}
+                        //下面这里的toolbar值是模板元素的选择器
+                        ,{fixed: 'right', title: '操作', align:'center', width: 150, toolbar: '#toolbarTpl'}
+                    ]
+                ]
+            });
+
+            //监听头部工具栏事件
+            table.on('toolbar(table-filter)', function(obj){
+                let curr = obj.config.page.curr;
+                switch (obj.event) {
+                    case 'add':
+                        mwj.loadPage("#content", "/sys/job/add");
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+            //监听工具条
+            table.on('tool(table-filter)', function(obj){
+                let row = obj.data;
+                switch (obj.event) {
+                    case 'edit':
+                        mwj.loadPage("#content", "/sys/job/edit/" + row.id);
+                        break;
+                    case 'delete':
+                        let warnMsg = '确认删除【' + row.name + '】吗？';
+                        layer.confirm(warnMsg, function(index){
+                            $.post("/sys/job/delete/" + row.id, null, function (result) {
+                                layer.close(index);
+                                mwj.msg(result);
+                                if(result.code === 0){
+                                    obj.del(); // 删除对应行（tr）的DOM结构，并更新缓存
+                                }
+                            });
+                        });
+                        break;
+                    case 'release':
+                        layer.confirm('确认发布【' + row.name + '】吗？', function(index){
+                            $.post("/sys/job/release", {id: row.id}, function (result) {
+                                layer.close(index);
+                                mwj.msgAndLoadPage(result, '#content', "/sys/job/index");
+                            });
+                        });
+                        break;
+                    case 'pause':
+                        layer.confirm('确认暂停【' + row.name + '】吗？', function(index){
+                            $.post("/sys/job/pause", {id: row.id}, function (result) {
+                                layer.close(index);
+                                mwj.msgAndLoadPage(result, '#content', "/sys/job/index");
+                            });
+                        });
+                        break;
+                    case 'resume':
+                        layer.confirm('确认恢复【' + row.name + '】吗？', function(index){
+                            $.post("/sys/job/resume", {id: row.id}, function (result) {
+                                layer.close(index);
+                                mwj.msgAndLoadPage(result, '#content', "/sys/job/index");
+                            });
+                        });
+                        break;
+                    case 'finish':
+                        layer.confirm('确认结束【' + row.name + '】吗？', function(index){
+                            $.post("/sys/job/finish", {id: row.id}, function (result) {
+                                layer.close(index);
+                                mwj.msgAndLoadPage(result, '#content', "/sys/job/index");
+                            });
+                        });
+                        break;
+                    case 'log':
+                        layer.open({
+                            type: 2
+                            ,title: "执行日志"
+                            ,shadeClose: true
+                            ,shade: [0.5, "#393D49"]
+                            ,maxmin: true
+                            ,area: ["1000px", "556px"]
+                            ,resize: false
+                            ,content: "/sys/job/log?jobId=" + row.id
+                        });
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+            /**
+             * 重载表格
+             * @param curr 当前页
+             * @param params 参数对象{}
+             */
+            function reloadTable(curr, params) {
+                curr  = curr ? curr : 1;
+                params = params ? params : {};
+                params._csrf = $("meta[name='_csrf']").attr("content");
+                tableIns.reload({
+                    where: params
+                    ,page: {
+                        theme: '#1E9FFF',
+                        curr: curr //重新从第 curr 页开始
+                    }
+                });
+            }
+
+            /* 监听表单提交——查询按钮——重载表格 */
+            form.on('submit(search-filter)', function(data){
+                //console.log(data.elem); //被执行事件的元素DOM对象，一般为button对象
+                //console.log(data.form); //被执行提交的form对象，一般在存在form标签时才会返回
+                //console.log(data.field); //当前容器的全部表单字段，名值对形式：{name: value}
+
+                //执行重载
+                reloadTable(1, data.field);
+                return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+            });
+
+            // 显式渲染，否则select无法被渲染
+            form.render();
+
+        });
+    </script>
+</body>
+
+</html>

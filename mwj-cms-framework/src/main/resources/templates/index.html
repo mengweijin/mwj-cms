@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head th:include="include :: header"></head>
+<style>
+    .mwj-header-height{
+        height: 44px !important;
+        line-height: 44px !important;
+    }
+    .mwj-body-index {
+        /*正文高度=100%-logo高度-header高度-footer高度*/
+        min-height: calc(100% - 86px - 44px - 44px);
+        left: 0;
+        top: 0 !important;
+        position: relative;
+        background: #e2e2e2;
+    }
+    .mwj-ico{
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+    }
+    .mwj-link{
+        display: inline-block;
+        margin: 20px 20px;
+    }
+</style>
+<body class="layui-layout layui-layout-admin">
+    <!--/** logo **/-->
+    <div th:fragment="logo">
+        <a th:href="@{/}"><img th:src="@{/image/index/logo_no_url.png}"/></a>
+        <img th:src="@{/image/index/logo_text.png}" class="layui-layout-right"/>
+    </div>
+
+    <div class="layui-header mwj-header-height">
+        <!--/** 头部区域（可配合layui已有的水平导航） **/-->
+        <ul class="layui-nav layui-layout-left" style="left: 0px;">
+            <li class="layui-nav-item mwj-header-height">
+                <a href="/">
+                    <i class="fas fa-home mwj-mgr" style="font-size: 20px;"></i>
+                    <span>主页</span>
+                </a>
+            </li>
+        </ul>
+
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item mwj-header-height">
+                <a href="/admin"><span>管理员主页</span></a>
+            </li>
+        </ul>
+    </div>
+
+    <!--/** 内容主体区域 **/-->
+    <div class="layui-body mwj-body-index container-fluid">
+        <div class="row" style="margin-top: 15px;">
+            <div class="col-md-12">
+                <div class="row">
+                    <div class="col-md-4">
+                        <span style="color: #FF5722; display: block; text-align: center;">mwj-cms后台管理系统</span>
+                        <a href="/admin" target="_blank">
+                            <img th:src="@{/image/index/mwj-cms.png}" style="margin: 5px 0;"/>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <span style="color: #FF5722; display: block; text-align: center;">禅道管理系统</span>
+                        <a href="http://60.205.177.13:8081/zentao/my/" target="_blank">
+                            <img th:src="@{/image/index/zentao.png}" style="margin: 5px 0;"/>
+                            <span>测试用户/密码：tester/abcd123456</span><br>
+                            <span>您也可以在这里给我提Bug!
+                                <i class="fa fa-smile"></i>
+                            </span>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <span style="color: #FF5722; display: block; text-align: center;">Jenkins持续集成系统</span>
+                        <a href="http://60.205.177.13:8082/" target="_blank">
+                            <img th:src="@{/image/index/jenkins.jpg}" style="margin: 5px 0;"/>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 20px;">
+            <div class="col-md-12" style="font-size: 14px; line-height: 26px; color: #666;">
+                <h3>个人链接</h3>
+                <div style="text-align: center; margin-top: 20px;">
+
+                    <div class="mwj-link">
+                        <a href="https://gitee.com/mengweijin" target="_blank">
+                            <img th:src="@{/image/index/favicon_gitee.ico}" class="mwj-ico"/>码云
+                        </a>
+                    </div>
+
+                    <div class="mwj-link">
+                        <a href="https://github.com/mengweijin" target="_blank">
+                            <img th:src="@{/image/index/favicon_github.ico}" class="mwj-ico"/>GitHub
+                        </a>
+                    </div>
+
+                    <div class="mwj-link">
+                        <a href="https://hub.docker.com/u/mengweijin/" target="_blank">
+                            <img th:src="@{/image/index/favicon_docker.png}" class="mwj-ico"/>Docker Hub
+                        </a>
+                    </div>
+
+                    <div class="mwj-link">
+                        <a href="https://blog.csdn.net/mmingxiang" target="_blank">
+                            <img th:src="@{/image/index/favicon_csdn.ico}" class="mwj-ico"/>CSDN博客
+                        </a>
+                    </div>
+
+                    <div class="mwj-link">
+                        <a href="http://changba.com/u/90330498" target="_blank">
+                            <img th:src="@{/image/index/favicon_changba.png}" class="mwj-ico"/>
+                            <span>娱乐</span>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!--/** 底部固定区域 **/-->
+    <div class="layui-footer" style="position:relative; text-align: center;left: 0;">
+        联系作者
+        <a target="_blank" href="http://wpa.qq.com/msgrd?v=3&uin=1002284406&site=qq&menu=yes" class="mwj-mgr">
+            <i class="layui-icon layui-icon-login-qq" style="color: #1E9FFF;"></i>
+        </a>
+        The MIT License (MIT) Copyright © 2018~<span id="nowYear"></span> <span th:text="${@appSupport.getAuthor()}"></span>
+    </div>
+
+    <div th:include="include::footer"></div>
+    <script>
+        $(function () {
+            $("#nowYear").text(new Date().getFullYear());
+        });
+    </script>
+</body>
+
+</html>

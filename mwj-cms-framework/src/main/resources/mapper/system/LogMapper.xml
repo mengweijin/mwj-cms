@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mwj.cms.system.mapper.LogMapper">
+
+    <select id="selectPageVO" resultType="java.util.Map">
+        select
+        log.id,
+        log.title,
+        log.url,
+        log.req_param,
+        log.method,
+        log.type,
+        log.operator,
+        log.oper_time,
+        log.oper_ip,
+        log.oper_location,
+        log.status,
+        log.error_msg,
+        u.nick as operator_nick
+        from sys_log log
+        left join sys_user u on log.operator=u.id
+        <where>
+            <if test="sysLog.id != null">
+                and log.id = #{sysLog.id}
+            </if>
+            <if test="sysLog.title != null and sysLog.title != ''">
+                and log.title like concat('%',#{sysLog.title},'%')
+            </if>
+            <if test="sysLog.url != null and sysLog.url != ''">
+                and log.url like concat('%', #{sysLog.url}, '%')
+            </if>
+            <if test="sysLog.reqParam != null and sysLog.reqParam != ''">
+                and log.req_param = #{sysLog.reqParam}
+            </if>
+            <if test="sysLog.method != null and sysLog.method != ''">
+                and log.method like concat('%', #{sysLog.method}, '%')
+            </if>
+            <if test="sysLog.type != null">
+                and log.type = #{sysLog.type}
+            </if>
+            <if test="sysLog.operator != null and sysLog.operator != ''">
+                and log.operator = #{sysLog.operator}
+            </if>
+            <if test="sysLog.operTime != null">
+                and DATE_FORMAT(log.oper_time,'%Y-%m-%d')=LEFT(#{sysLog.operTime}, 10)
+            </if>
+            <if test="sysLog.operIp != null and sysLog.operIp != ''">
+                and log.oper_ip like concat('%', #{sysLog.operIp}, '%')
+            </if>
+            <if test="sysLog.operLocation != null and sysLog.operLocation != ''">
+                and log.oper_location = #{sysLog.operLocation}
+            </if>
+            <if test="sysLog.status != null">
+                and log.status = #{sysLog.status}
+            </if>
+            <if test="sysLog.errorMsg != null and sysLog.errorMsg != ''">
+                and log.error_msg = #{sysLog.errorMsg}
+            </if>
+        </where>
+
+        order by log.oper_time desc
+    </select>
+</mapper>

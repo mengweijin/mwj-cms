@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head th:include="include :: header"></head>
+<body>
+
+    <div class="layui-container" style="padding: 20px 20px;">
+        <form class="layui-form layui-form-pane" method="post" action="">
+
+            <div class="layui-form-item" th:if="${not #strings.isEmpty(dept.id)}">
+                <label class="layui-form-label">编号</label>
+                <div class="layui-input-block">
+                    <input name="id" type="text" readonly="true"
+                           placeholder="" autocomplete="off" class="layui-input"
+                           th:value="${dept.id}"/>
+                </div>
+            </div>
+
+            <div class="layui-form-item" th:if="${#strings.isEmpty(dept.id)}">
+                <label class="layui-form-label">上级部门</label>
+                <div class="layui-input-block">
+                    <input type="hidden" name="parentId" th:value="${parentDept.id}">
+                    <input name="parentName" type="text" readonly="true"
+                           placeholder="" autocomplete="off" class="layui-input"
+                           th:value="${parentDept.name}"/>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">名称</label>
+                <div class="layui-input-block">
+                    <input name="name" type="text" required="" lay-verify="required|name"
+                           placeholder="名称" autocomplete="off" class="layui-input"
+                           th:value="${dept.name}"/>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">排序</label>
+                <div class="layui-input-block">
+                    <input name="orderNum" type="text" required="" lay-verify="number"
+                           placeholder="" autocomplete="off" class="layui-input"
+                           th:value="${dept.orderNum}"/>
+                </div>
+            </div>
+
+            <!--/* 按钮组容器 */-->
+            <div class="layui-btn-container" style="text-align: center; padding-top: 10px; border: 1px solid #eeeeee;">
+                <button type="submit" lay-submit class="layui-btn layui-btn-normal mwj-btn-width" lay-filter="submit-filter">提交</button>
+                <button type="button" id="cancel" class="layui-btn layui-btn-normal mwj-btn-width">取消</button>
+            </div>
+        </form>
+    </div>
+
+    <div th:include="include::footer"></div>
+    <script type="text/javascript" th:inline="javascript">
+        $(function () {
+            /* 自定义表单验证 */
+            let form = layui.form;
+            form.verify({
+                // value：表单的值、item：表单的DOM对象
+                name: function(value, item){
+                    if(!new RegExp("^[a-zA-Z0-9_\u4e00-\u9fa5\\s·]+$").test(value)){
+                        return '名称不能包含特殊字符';
+                    }
+                    if(/(^\_)|(\__)|(\_+$)/.test(value)){
+                        return '名称首尾不能出现下划线\'_\'';
+                    }
+                    if(/^\d+\d+\d$/.test(value)){
+                        return '名称不能全为数字';
+                    }
+                    if(value.length > 30){
+                        return '名称长度不能大于30';
+                    }
+                }
+            });
+
+            /* 提交按钮 */
+            form.on('submit(submit-filter)', function(data){
+                //console.log(data.elem); //被执行事件的元素DOM对象，一般为button对象
+                //console.log(data.form); //被执行提交的form对象，一般在存在form标签时才会返回
+                //console.log(data.field); //当前容器的全部表单字段，名值对形式：{name: value}
+
+                let url = data.field.id ? '/sys/dept/update' : '/sys/dept/insert';
+                $.post(url, data.field, function (result) {
+                    mwj.msg(result);
+                    if(result.code == 0){
+                        mwj.closeLayer();
+                        parent.$("#sideNavTree .layui-this a").get(0).click();
+                    }
+                });
+                return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+            });
+
+            mwj.addRedStar();
+
+            $("#cancel").on("click", function () {
+                mwj.closeLayer();
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mwj.cms.system.mapper.FileMapper">
+
+    <select id="selectPageVO" resultType="java.util.Map">
+        select
+        f.id,
+        f.group_id,
+        f.storage_name,
+        f.original_name,
+        f.file_path,
+        f.create_by,
+        f.create_time,
+        uc.nick as create_user_nick
+        from sys_file f
+        left join sys_user uc on f.create_by=uc.id
+        <where>
+            <if test="file.id != null">
+                and f.id = #{file.id}
+            </if>
+            <if test="file.groupId != null and file.groupId != ''">
+                and f.group_id = #{file.groupId}
+            </if>
+            <if test="file.storageName != null and file.storageName != ''">
+                and f.storage_name = #{file.storageName}
+            </if>
+            <if test="file.originalName != null and file.originalName != ''">
+                and f.original_name like concat('%',#{file.originalName},'%')
+            </if>
+            <if test="file.filePath != null and file.filePath != ''">
+                and f.file_path = #{file.filePath}
+            </if>
+            <if test="file.createBy != null">
+                and f.create_by = #{file.createBy}
+            </if>
+            <if test="file.createTime != null">
+                and f.create_time = #{file.createTime}
+            </if>
+        </where>
+        order by f.create_time desc
+    </select>
+</mapper>

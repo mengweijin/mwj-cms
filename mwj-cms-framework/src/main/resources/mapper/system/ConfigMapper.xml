@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mwj.cms.system.mapper.ConfigMapper">
+
+    <select id="selectPageVO" resultType="java.util.Map">
+        select
+          c.id,
+          c.type,
+          c.name,
+          c.key_name,
+          c.value,
+          c.create_by,
+          c.create_time,
+          c.update_by,
+          c.update_time,
+          c.remark,
+          uc.nick as create_user_nick,
+          uu.nick as update_user_nick
+        from sys_config c
+        left join sys_user uc on c.create_by=uc.id
+        left join sys_user uu on c.update_by=uu.id
+        <where>
+            <if test="config.id != null">
+                and c.id = #{config.id}
+            </if>
+            <if test="config.type != null and config.type != ''">
+                and c.type = #{config.type}
+            </if>
+            <if test="config.name != null and config.name != ''">
+                and c.name like concat('%',#{config.name},'%')
+            </if>
+            <if test="config.keyName != null and config.keyName != ''">
+                and c.key_name like concat('%',#{config.keyName},'%')
+            </if>
+            <if test="config.value != null and config.value != ''">
+                and c.value = #{config.value}
+            </if>
+            <if test="config.createBy != null">
+                and c.create_by = #{config.createBy}
+            </if>
+            <if test="config.createTime != null">
+                and c.create_time = #{config.createTime}
+            </if>
+            <if test="config.updateBy != null">
+                and c.update_by = #{config.updateBy}
+            </if>
+            <if test="config.updateTime != null">
+                and c.update_time = #{config.updateTime}
+            </if>
+            <if test="config.remark != null and config.remark != ''">
+                and c.remark = #{config.remark}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectConfigTypes" resultType="java.lang.String">
+        select distinct type from sys_config
+    </select>
+</mapper>

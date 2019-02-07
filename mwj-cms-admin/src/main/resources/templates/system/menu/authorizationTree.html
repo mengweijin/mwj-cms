@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head th:include="include :: header"></head>
+<style>
+    /** 箭头未展开 */
+    .treeTable .treeTable-icon .layui-icon-triangle-d:before {
+        content: "\e602";
+    }
+
+    /** 箭头展开 */
+    .treeTable .treeTable-icon.open .layui-icon-triangle-d:before {
+        content: "\e61a";
+    }
+
+    /** 文件图标 */
+    .treeTable .treeTable-icon .layui-icon-file:before {
+        content: "\e621";
+    }
+
+    /** 文件夹未展开 */
+    .treeTable .treeTable-icon .layui-icon-layer:before {
+        content: "\e857";
+    }
+
+    /** 文件夹展开 */
+    .treeTable .treeTable-icon.open .layui-icon-layer:before {
+        content: "\e857";
+    }
+</style>
+<body>
+    <div class=".container-fluid">
+        <div class="row" style="margin-left: 10px;">
+            <div class="col-md-10">
+                <table id="treeTable" class="layui-table" lay-filter="treeTable-filter"></table>
+            </div>
+            <div class="col-md-2">
+
+            </div>
+        </div>
+    </div>
+
+
+    <div th:include="include::footer"></div>
+    <script type="text/javascript" th:inline="javascript">
+        $(function () {
+            let renderTreeTable;
+            let table = layui.table;
+            layui.config({
+                base: '/extend/treetable-lay/'
+            }).extend({
+                // 这里不要使用下面注释的方式定义扩展组件的别名，而要采用layui默认规则，否则第二次加载页面时会报模块名已占用的错误。
+                //treetable: 'treetable'
+            }).use(['table', 'treetable'], function () {
+                let treetable = layui.treetable;
+
+                // 渲染表格
+                renderTreeTable = function(){
+                    treetable.render({
+                        id: "authTableGrid",
+                        treeColIndex: 2,          // 树形图标显示在第几列
+                        treeSpid: 0,             // 最上级的父级id
+                        treeIdName: 'id',       // id字段的名称
+                        treePidName: 'parentId',     // pid字段的名称
+                        treeDefaultClose: false,   // 是否默认折叠
+                        treeLinkage: true,        // 父级展开时是否自动展开所有子级
+                        elem: '#treeTable',
+                        url: '/sys/menu/queryAuthorizationTreeGrid',
+                        where:{roleId: [[${roleId}]]},
+                        cols: [
+                            [
+                                {type: 'checkbox'}
+                                ,{field: 'id',                  title: '编号',  width:80,         hide:true}
+                                ,{field: 'name',                title: '名称'}
+                                ,{field: 'icon',                title: '菜单图标',  width:100, align:'center'
+                                    ,templet: function (d) {
+                                        return "<i class='" + d.icon + "'></i>";
+                                    }
+                                }
+                                ,{field: 'orderNum',            title: '排序号', width:80, align:'center'}
+                                ,{field: 'url',            title: '请求地址', width:230}
+                                ,{field: 'menuType',            title: '菜单类型', width:100, align:'center'
+                                    ,templet: function (d) {
+                                        let $type =  $('<span class="layui-btn layui-btn-radius layui-btn-xs"></span>');
+                                        switch (d.menuType) {
+                                            case 0:
+                                                $type.text("目录");
+                                                break;
+                                            case 1:
+                                                $type.text("菜单").addClass("layui-btn-normal");
+                                                break;
+                                            case 2:
+                                                $type.text("按钮").addClass("layui-btn-warm");
+                                                break;
+                                            default:
+                                                $type.text(d.menuType).addClass("layui-btn-danger");
+                                                break;
+                                        }
+                                        return $type.get(0).outerHTML;
+                                    }
+                                }
+                                ,{field: 'permission',            title: '权限标识', width:230}
+                            ]
+                        ]
+                    });
+
+                    /*
+                    注意事项(treetable):
+                        1. 不能使用分页功能，即使写了page:true，也会忽略该参数。
+                        2. 不能使用排序功能，不要开启排序功能。
+                        3. table.reload()不能实现刷新，请参考demo的刷新。
+                        4. 除了文档上写的treetable.xxx的方法之外，其他数据表格的方法都使用table.xxx。
+                        5. 建议删除和修改请求完后台之后请刷新（重新渲染）表格，最好不要使用obj.delete方式删除。
+                    */
+                };
+
+                // 渲染树表格
+                renderTreeTable();
+
+            });
+
+            // 固定块, 回到顶部的图标会自动出来
+            let util = layui.util;
+            util.fixbar({
+                // 授权按钮
+                bar1: "&#xe672;"
+                // 重置按钮
+                ,bar2: "&#xe669;"
+                ,css: {right: 100, top: 200}
+                ,bgcolor: '#393D49'
+                ,click: function(type){
+                    switch (type) {
+                        case 'bar1':
+                            let checkStatus = table.checkStatus('authTableGrid'); //authTableGrid 即为基础参数 id 对应的值
+
+                            // console.log(checkStatus.data); //获取选中行的数据
+                            // console.log(checkStatus.data.length); //获取选中行数量，可作为是否有选中行的条件
+                            // console.log(checkStatus.isAll); //表格是否全选
+
+                            if(checkStatus.data.length < 0){
+                                mwj.warn("至少选中一个！");
+                            } else {
+                                let menuRowArray = checkStatus.data;
+                                let menuIdArray = [];
+                                for(let i in menuRowArray){
+                                    menuIdArray.push(menuRowArray[i].id);
+                                }
+                                $.post("/sys/role/authorization", {roleId: [[${roleId}]], menuIds: menuIdArray}, function (result) {
+                                    mwj.msg(result);
+
+                                    if(result.code == 0){
+                                        // 延时1秒关闭弹层
+                                        setTimeout("mwj.closeLayer()",1000);
+                                    }
+                                });
+                            }
+                            break;
+                        case 'bar2':
+                            // 刷新树表格
+                            renderTreeTable();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
+
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mwj.cms.system.mapper.InterfaceMapper">
+
+    <select id="selectPageVO" resultType="java.util.Map">
+        select
+        i.id,
+        i.name,
+        i.key_code,
+        i.type,
+        i.url,
+        i.name_space,
+        i.method_name,
+        i.request_type,
+        i.update_by,
+        i.update_time,
+        i.remark,
+        uu.nick as update_user_nick
+        from sys_interface i
+        left join sys_user uu on i.update_by=uu.id
+        <where>
+            <if test="interf.id != null">
+                and i.id = #{interf.id}
+            </if>
+            <if test="interf.name != null and interf.name != ''">
+                and i.name like concat('%', #{interf.name}, '%')
+            </if>
+            <if test="interf.keyCode != null and interf.keyCode != ''">
+                and i.key_code = #{interf.keyCode}
+            </if>
+            <if test="interf.type != null">
+                and i.type = #{interf.type}
+            </if>
+            <if test="interf.url != null and interf.url != ''">
+                and i.url = #{interf.url}
+            </if>
+            <if test="interf.nameSpace != null and interf.nameSpace != ''">
+                and i.name_space = #{interf.nameSpace}
+            </if>
+            <if test="interf.methodName != null and interf.methodName != ''">
+                and i.method_name = #{interf.methodName}
+            </if>
+            <if test="interf.requestType != null and interf.requestType != ''">
+                and i.request_type = #{interf.requestType}
+            </if>
+            <if test="interf.updateBy != null">
+                and i.update_by = #{interf.updateBy}
+            </if>
+            <if test="interf.updateTime != null">
+                and i.update_time = #{interf.updateTime}
+            </if>
+            <if test="interf.remark != null and interf.remark != ''">
+                and i.remark = #{interf.remark}
+            </if>
+        </where>
+    </select>
+</mapper>

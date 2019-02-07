@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style>
+        table,table tr th, table tr td { border:1px solid darkred; }
+    </style>
+</head>
+
+<body>
+    <table cellspacing="0" cellpadding="0">
+        <thead>
+            <tr>
+                <th width="20%">日志名称</th>
+                <th width="50px;">行号</th>
+                <th>简要异常信息</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="errorLog: ${errorLogList}">
+                <td th:text="${errorLog.fileName}"></td>
+                <td th:text="${errorLog.lineNumber}"></td>
+                <td th:text="${errorLog.errorMsg}"></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

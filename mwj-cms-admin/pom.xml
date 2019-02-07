@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>mwj-cms-admin</artifactId>
+    <!--<groupId><version> 无需添加，会继承父模块-->
+    <packaging>jar</packaging>
+
+    <name>mwj-cms-admin</name>
+    <description>mengweijin cms admin</description>
+
+    <parent>
+        <artifactId>mwj-cms</artifactId>
+        <groupId>com.mwj</groupId>
+        <version>1.0</version>
+    </parent>
+
+    <!-- <properties> 会继承父模块 -->
+
+    <dependencies>
+
+        <dependency>
+            <groupId>com.mwj</groupId>
+            <artifactId>mwj-cms-framework</artifactId>
+            <version>${parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <!-- spring boot maven插件，创建可执行的jar -->
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <fork>true</fork> <!-- 如果没有该配置，devtools不会生效 -->
+                </configuration>
+            </plugin>
+        </plugins>
+
+    </build>
+
+
+</project>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <div class=".container-fluid">
+        <div class="row" style="margin-left: 2px;">
+            <div class="col-md-2 mwj-border" style="margin: 10px auto; overflow: auto;">
+                <ul id="tree" class="ztree"></ul>
+            </div>
+
+            <div class="col-md-10">
+
+                <table id="table" lay-filter="table-filter"></table>
+
+                <!--/**
+                    定义是否允许为空的开关。
+                    注意：data-dept-id不能些为驼峰命名方式，如: 写成data-deptId，则js会转为data-deptid
+                **/-->
+                <script id="switchTpl" type="text/html">
+                    <input type="checkbox"
+                           name="deptStatus"
+                           value="{{d.id}}"
+                           lay-skin="switch"
+                           lay-text="正常|停用"
+                           lay-filter="switch-filter" {{ d.status == '0' ? 'checked' : '' }}>
+                </script>
+
+                <script id="headBarTpl" type="text/html">
+                    <div class="layui-btn-container">
+                        <a class="mwj-mgr" href="javascript:" lay-event="add" title="添加">
+                            <span class="layui-btn layui-btn-sm layui-btn-normal">
+                                <i class="layui-icon layui-icon-add-1"></i>添加
+                            </span>
+                        </a>
+                    </div>
+                </script>
+
+                <script id="toolbarTpl" type="text/html">
+                    <div class="layui-btn-container">
+                        <a class="mwj-mgr" href="javascript:" lay-event="edit" title="编辑">
+                            <i class="layui-icon layui-icon-edit" style="color: #1E9FFF; font-size: 20px;"></i>
+                        </a>
+                        <a class="mwj-mgr" href="javascript:" lay-event="resetPassword" title="重置密码">
+                            <span class="layui-btn layui-btn-xs layui-btn-warm">重置密码</span>
+                        </a>
+                    </div>
+                </script>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="text/javascript" th:inline="javascript">
+        $(function () {
+            let setting = {
+                async: {
+                    enable:true,
+                    autoParam: ["id"],
+                    url: '/sys/dept/query',
+                    otherParam: {
+                        _csrf: $("meta[name='_csrf']").attr("content")
+                    }
+                },
+                data: {
+                    key: {
+                        children: 'children',
+                        name: 'name'
+                    },
+                    simpleData: {
+                        enable: true,
+                        idKey: 'id',
+                        pIdKey: 'parentId',
+                        rootPId: 0
+                    }
+                },
+                view: {
+                    selectedMulti: false
+                },
+                callback: {
+                    onAsyncSuccess: function (event, treeId, treeNode, msg) {
+                        $.fn.zTree.getZTreeObj("tree").expandAll(true);
+                    },
+                    onAsyncError: function () {
+                        mwj.error("树加载失败！");
+                    },
+                    onClick: function (event, treeId, treeNode, clickFlag) {
+                        let params = {};
+                        if(treeNode.id != 1){
+                            params = {deptId: treeNode.id};
+                        }
+                        reloadTable(1, params);
+                    }
+                }
+            };
+            let tree = $.fn.zTree.init($("#tree"), setting, null);
+
+            let table = layui.table, form = layui.form;
+            let tableIns = table.render({
+                elem: '#table' //指定原始表格元素选择器（推荐id选择器）
+                ,url: 'sys/user/queryPage'
+                ,where: {_csrf: $("meta[name='_csrf']").attr("content")}
+                ,method: 'post'
+                //,height: 'full-20' //高度最大化减去差值
+                ,loading: true //是否显示加载条
+                ,toolbar: '#headBarTpl' // true/'default'/'<div>xxx</div>'/'#toolbarDemo'
+                ,defaultToolbar: ['filter', 'print', 'exports']
+                ,page: {  // 分页,可包含 laypage 组件所有支持的参数（jump、elem除外）
+                    theme: '#1E9FFF'
+                    ,limit: 10  //默认采用10条
+                    ,limits: [10, 20, 50]    // 每页条数[10, 20, 30]等
+                }
+                ,cols:  [ // 表头，标题栏。这里的上下两个中括号一定要分开写，如果写在一起，就被thymeleaf解释为内联表达式了。
+                    [
+                        {type: 'radio',               fixed: 'left',          hide:true}
+                        ,{type: 'checkbox',                                     hide:true}
+                        ,{field: 'id',                  title: '编号',            hide:true}
+                        ,{field: 'deptName',   title: '部门',  width:140, sort:false}
+                        ,{field: 'loginName',   title: '登录账号',  width:140, sort:false}
+                        ,{field: 'nick',   title: '用户昵称',  width:120, sort:false}
+                        ,{field: 'sex',   title: '性别',  width:80, sort:false}
+                        ,{field: 'status',   title: '状态',  width:100, sort:false,  templet: '#switchTpl'}
+                        ,{field: 'phoneNumber',   title: '电话',  width:120, sort:false}
+                        ,{field: 'email',   title: '邮箱',  minWidth:180, sort:false}
+                        ,{field: 'createUserNick',   title: '创建者',  minWidth:80, sort:false, hide:true}
+                        ,{field: 'createTime',   title: '创建时间',  minWidth:180, sort:false, hide:true}
+                        ,{field: 'updateUserNick',   title: '更新者',  minWidth:80, sort:false, hide:true}
+                        ,{field: 'updateTime',   title: '更新时间',  minWidth:180, sort:false, hide:true}
+                        //下面这里的toolbar值是模板元素的选择器
+                        ,{fixed: 'right', title: '操作', align:'center', width: 130, toolbar: '#toolbarTpl'}
+                    ]
+                ]
+            });
+
+            //监听头部工具栏事件
+            table.on('toolbar(table-filter)', function(obj){
+                let curr = obj.config.page.curr;
+                switch (obj.event) {
+                    case 'add':
+                        mwj.loadPage("#content", "/sys/user/add", null);
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+            //监听工具条
+            table.on('tool(table-filter)', function(obj){
+                let row = obj.data;
+                switch (obj.event) {
+                    case 'edit':
+                        mwj.loadPage("#content", "/sys/user/edit/" + row.id, null);
+                        break;
+                    case 'resetPassword':
+                        layer.confirm("确认重置用户【" + row.nick + "】的密码吗？", function(index){
+                            $.post("/sys/user/resetPassword/" + row.id, null, function (result) {
+                                layer.close(index);
+                                mwj.msg(result);
+                            });
+                        });
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+            form.on('switch(switch-filter)', function(data){
+                let userId = data.value;
+                let status = data.elem.checked ? '0' : '1';
+                $.post("/sys/user/switchStatus", {id: userId, status: status}, function (result) {
+                    mwj.msg(result);
+                    // 刷新表格
+                    reloadTable(1);
+                });
+
+                //console.log(data.elem); //得到checkbox原始DOM对象
+                //console.log(data.elem.checked); //开关是否开启，true或者false
+                //console.log(data.value); //开关value值，也可以通过data.elem.value得到
+                //console.log(data.othis); //得到美化后的DOM对象
+
+            });
+
+            /**
+             * 重载表格
+             * @param curr 当前页
+             * @param params 参数对象{}
+             */
+            function reloadTable(curr, params) {
+                curr  = curr ? curr : 1;
+                params = params ? params : {};
+                params._csrf = $("meta[name='_csrf']").attr("content");
+                tableIns.reload({
+                    where: params
+                    ,page: {
+                        theme: '#1E9FFF',
+                        curr: curr //重新从第 curr 页开始
+                    }
+                });
+            }
+
+        });
+    </script>
+</body>
+
+</html>

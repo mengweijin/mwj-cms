@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<style>
+    /** 箭头未展开 */
+    .treeTable .treeTable-icon .layui-icon-triangle-d:before {
+        content: "\e602";
+    }
+
+    /** 箭头展开 */
+    .treeTable .treeTable-icon.open .layui-icon-triangle-d:before {
+        content: "\e61a";
+    }
+
+    /** 文件图标 */
+    .treeTable .treeTable-icon .layui-icon-file:before {
+        content: "\e621";
+    }
+
+    /** 文件夹未展开 */
+    .treeTable .treeTable-icon .layui-icon-layer:before {
+        content: "\e857";
+    }
+
+    /** 文件夹展开 */
+    .treeTable .treeTable-icon.open .layui-icon-layer:before {
+        content: "\e857";
+    }
+</style>
+<body>
+
+    <table id="treeTable" class="layui-table" lay-filter="treeTable-filter"></table>
+
+    <!--/**
+        定义是否允许为空的开关。
+        注意：data-dept-id不能些为驼峰命名方式，如: 写成data-deptId，则js会转为data-deptid
+    **/-->
+    <script id="switchTpl" type="text/html">
+        <input type="checkbox"
+               name="deptStatus"
+               value="{{d.id}}"
+               lay-skin="switch"
+               lay-text="正常|停用"
+               lay-filter="dept-switch-filter" {{ d.status == '0' ? 'checked' : '' }}>
+    </script>
+
+    <script id="toolbarTpl" type="text/html">
+        <!--/*
+            templet对应的模板，它可以存放在页面的任意位置。模板遵循于 laytpl 语法，可读取到返回的所有数据。
+            {{d.id}}、{{d.name}} 是动态内容，它对应数据接口返回的字段名。
+            除此之外，你还可以读取到以下额外字段：序号：{{ d.LAY_INDEX }} （该额外字段为 layui 2.2.0 新增）
+        */-->
+        <div class="layui-btn-container">
+            <a class="mwj-mgr" href="javascript:" lay-event="add" title="添加">
+                <i class="layui-icon layui-icon-add-1" style="color: #1E9FFF; font-size: 20px;"></i>
+            </a>
+            <a class="mwj-mgr" href="javascript:" lay-event="edit" title="编辑">
+                <i class="layui-icon layui-icon-edit" style="color: #1E9FFF; font-size: 20px;"></i>
+            </a>
+            <a class="mwj-mgr" href="javascript:" lay-event="delete" title="删除">
+                <i class="layui-icon layui-icon-delete" style="color: #FF5722; font-size: 20px;"></i>
+            </a>
+        </div>
+    </script>
+
+    <script type="text/javascript" th:inline="javascript">
+        $(function () {
+            layui.config({
+                base: 'extend/treetable-lay/'
+            }).extend({
+                // 这里不要使用下面注释的方式定义扩展组件的别名，而要采用layui默认规则，否则第二次加载页面时会报模块名已占用的错误。
+                //treetable: 'treetable'
+            }).use(['table', 'treetable'], function () {
+                let treetable = layui.treetable, table = layui.table, form = layui.form;
+
+                // 渲染表格
+                treetable.render({
+                    treeColIndex: 2,          // 树形图标显示在第几列
+                    treeSpid: 0,             // 最上级的父级id
+                    treeIdName: 'id',       // id字段的名称
+                    treePidName: 'parentId',     // pid字段的名称
+                    treeDefaultClose: false,   // 是否默认折叠
+                    treeLinkage: false,        // 父级展开时是否自动展开所有子级
+                    elem: '#treeTable',
+                    url: 'sys/dept/queryTreeGrid',
+                    where:{},
+                    cols: [
+                        [
+                            {type: 'numbers'}
+                            ,{field: 'id',                  title: '编号',  width:80,         hide:true}
+                            ,{field: 'name',                title: '名称', minWidth: 200}
+                            ,{field: 'orderNum',            title: '排序号', width:80, align:'center'}
+                            ,{field: 'status',            title: '状态', width:120, align:'center',  templet: '#switchTpl'}
+                            ,{field: 'createUserNick',     title: '创建者', width:120}
+                            ,{field: 'createTime',          title: '创建时间',   minWidth:180}
+                            ,{field: 'updateUserNick',      title: '更新者', width:120}
+                            ,{field: 'updateTime',      title: '更新时间',   minWidth:180}
+                            //下面这里的toolbar值是模板元素的选择器
+                            ,{fixed: 'right', title: '操作', align:'center', width: 130, toolbar: '#toolbarTpl'}
+                        ]
+                    ]
+                });
+
+                //监听工具条
+                table.on('tool(treeTable-filter)', function(obj){
+                    let row = obj.data;
+                    switch (obj.event) {
+                        case 'add':
+                            editDeptPage("部门新增", "/sys/dept/add?parentId=" + row.id);
+                            break;
+                        case 'edit':
+                            editDeptPage("部门编辑", "/sys/dept/edit/" + row.id);
+                            break;
+                        case 'delete':
+                            let warnMsg = '确认删除【' + row.name + '】吗？';
+                            layer.confirm(warnMsg, function(index){
+                                $.post("/sys/dept/delete/" + row.id, null, function (result) {
+                                    layer.close(index);
+                                    mwj.msgAndLoadPage(result, "#content", "sys/dept/index");
+                                });
+                            });
+
+                            break;
+                        default:
+                            break;
+                    }
+                });
+
+                form.on('switch(dept-switch-filter)', function(data){
+                    let deptId = data.value;
+                    let status = data.elem.checked ? '0' : '1';
+                    $.post("/sys/dept/switchStatus", {id: deptId, status: status}, function (result) {
+                        mwj.msgAndLoadPage(result, '#content', 'sys/dept/index')
+                    });
+
+                    //console.log(data.elem); //得到checkbox原始DOM对象
+                    //console.log(data.elem.checked); //开关是否开启，true或者false
+                    //console.log(data.value); //开关value值，也可以通过data.elem.value得到
+                    //console.log(data.othis); //得到美化后的DOM对象
+                });
+
+                /**
+                 * 部门编辑弹框
+                 * @param title
+                 * @param url
+                 * @returns {*}
+                 */
+                function editDeptPage(title, url) {
+                    return layer.open({
+                        type: 2
+                        ,title: title
+                        ,shadeClose: false
+                        ,shade: [0.5, "#393D49"]
+                        ,maxmin: true
+                        ,area: ["600px", "330px"]
+                        ,resize: false
+                        ,content: url
+                    });
+                }
+
+                /*
+                注意事项(treetable):
+                    1. 不能使用分页功能，即使写了page:true，也会忽略该参数。
+                    2. 不能使用排序功能，不要开启排序功能。
+                    3. table.reload()不能实现刷新，请参考demo的刷新。
+                    4. 除了文档上写的treetable.xxx的方法之外，其他数据表格的方法都使用table.xxx。
+                    5. 建议删除和修改请求完后台之后请刷新（重新渲染）表格，最好不要使用obj.delete方式删除。
+                */
+            });
+        });
+    </script>
+</body>
+
+</html>

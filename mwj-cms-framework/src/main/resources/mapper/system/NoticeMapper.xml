@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mwj.cms.system.mapper.NoticeMapper">
+
+    <select id="selectPageVO" resultType="java.util.Map">
+        select
+        n.id,
+        n.title,
+        n.content,
+        n.status,
+        n.create_by,
+        n.create_time,
+        n.update_by,
+        n.update_time,
+        uc.nick as create_user_nick,
+        uu.nick as update_user_nick
+        from sys_notice n
+        left join sys_user uc on n.create_by=uc.id
+        left join sys_user uu on n.update_by=uu.id
+        <where>
+            <if test="notice.id != null">
+                and n.id = #{notice.id}
+            </if>
+            <if test="notice.title != null and notice.title != ''">
+                and n.title like concat('%', #{notice.title},'%')
+            </if>
+            <if test="notice.content != null and notice.content != ''">
+                and n.content = #{notice.content}
+            </if>
+            <if test="notice.status != null">
+                and n.status = #{notice.status}
+            </if>
+            <if test="notice.createBy != null">
+                and n.create_by = #{notice.createBy}
+            </if>
+            <if test="notice.createTime != null">
+                and n.create_time = #{notice.createTime}
+            </if>
+            <if test="notice.updateBy != null">
+                and n.update_by = #{notice.updateBy}
+            </if>
+            <if test="notice.updateTime != null">
+                and n.update_time = #{notice.updateTime}
+            </if>
+        </where>
+        order by n.create_time desc
+    </select>
+</mapper>

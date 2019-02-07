@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head th:include="include :: header"></head>
+<style>
+    /* 局部覆盖layui样式 */
+    .layui-table, .layui-table-view {
+        margin: 0 0;
+    }
+</style>
+<body>
+    <table id="table" lay-filter="table-filter"></table>
+
+    <div th:include="include::footer"></div>
+    <script type="text/javascript" th:inline="javascript">
+        $(function () {
+            let table = layui.table;
+
+            let tableIns = table.render({
+                elem: '#table' //指定原始表格元素选择器（推荐id选择器）
+                ,url: '/sys/jobLog/queryPage'
+                ,where: {_csrf: $("meta[name='_csrf']").attr("content"), jobId: [[${jobId}]]}
+                ,method: 'post'
+                //,height: 'full-20' //高度最大化减去差值
+                ,loading: true //是否显示加载条
+                ,toolbar: true // true/'default'/'<div>xxx</div>'/'#toolbarDemo'
+                ,defaultToolbar: ['filter', 'print', 'exports']
+                ,page: {  // 分页,可包含 laypage 组件所有支持的参数（jump、elem除外）
+                    theme: '#1E9FFF'
+                    ,limit: 10  //默认采用10条
+                    ,limits: [10, 20, 30]    // 每页条数[10, 20, 30]等
+                }
+                ,cols:  [ // 表头，标题栏。这里的上下两个中括号一定要分开写，如果写在一起，就被thymeleaf解释为内联表达式了。
+                    [
+                        //{type: 'radio',               fixed: 'left',          hide:true}
+                        //{type: 'checkbox',      fixed: 'left',          hide:false}
+                        {field: 'id',      title: '编号',               hide:false}
+                        ,{field: 'status',  title: '状态', sort:true, align:'center'
+                            ,templet: function (d) {
+                                let $status = $('<span class="layui-btn layui-btn-radius layui-btn-xs">' + d.status + '</span>');
+                                switch (d.status) {
+                                    case '执行中':
+                                        $status.addClass("layui-btn-normal");
+                                        break;
+                                    case '成功':
+                                        break;
+                                    case '失败':
+                                        $status.addClass("layui-btn-danger");
+                                        break;
+                                    default:
+                                        $status.addClass("layui-btn-primary");
+                                        break;
+                                }
+                                if(d.status != '成功'){
+                                    $status.addClass("layui-btn-danger");
+                                }
+
+                                return $status.get(0).outerHTML;
+                            }
+                        }
+                        ,{field: 'ip',   title: '执行主机IP',  minWidth:180, sort:false}
+                        ,{field: 'createTime',   title: '创建时间',  minWidth:180, sort:false}
+                        ,{field: 'endTime',   title: '结束时间',  minWidth:180, sort:false}
+                        ,{field: 'errorMsg',   title: '错误消息',  minWidth:180, sort:false, hide:true}
+                    ]
+                ]
+            });
+
+        });
+    </script>
+</body>
+
+</html>

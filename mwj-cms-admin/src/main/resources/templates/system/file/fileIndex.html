@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <div class="layui-container mwj-height-full" style="width: 100%;">
+
+        <form class="layui-form layui-form-pane" method="post" action="">
+            <div class="layui-form-item" style="margin-bottom: 0px;">
+                <div class="layui-inline">
+                    <label class="layui-form-label">文件名称</label>
+                    <div class="layui-input-inline">
+                        <input name="originalName" type="text" autocomplete="on" class="layui-input"/>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">创建者</label>
+                    <div class="layui-input-inline">
+                        <select name="createBy" lay-search th:with="userList=${@userService.list()}">
+                            <option value="">请选择</option>
+                            <option th:each="user : ${userList}" th:value="${user.id}" th:text="${user.nick}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <!--/* 按钮组容器 */-->
+                    <div class="layui-btn-container">
+                        <button type="submit" lay-submit class="layui-btn layui-btn-normal" style="width: 110px;" lay-filter="search-filter">搜索</button>
+                        <input id="resetBtn" type="reset" class="layui-btn layui-btn-normal" style="width: 110px;"/>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+
+        <table id="table" lay-filter="table-filter"></table>
+
+
+        <script id="toolbarTpl" type="text/html">
+            <div class="layui-btn-container">
+                <a class="mwj-mgr" href="javascript:" lay-event="delete" title="删除">
+                    <i class="layui-icon layui-icon-delete" style="color: #FF5722; font-size: 20px;"></i>
+                </a>
+            </div>
+        </script>
+
+    </div>
+
+    <script type="text/javascript" th:inline="javascript">
+        $(function () {
+            let table = layui.table, form = layui.form;
+
+            let tableIns = table.render({
+                elem: '#table' //指定原始表格元素选择器（推荐id选择器）
+                ,url: 'sys/file/queryPage'
+                ,where: {_csrf: $("meta[name='_csrf']").attr("content")}
+                ,method: 'post'
+                //,height: 'full-20' //高度最大化减去差值
+                ,loading: true //是否显示加载条
+                ,toolbar: true // true/'default'/'<div>xxx</div>'/'#toolbarDemo'
+                ,defaultToolbar: ['filter', 'print', 'exports']
+                ,page: {  // 分页,可包含 laypage 组件所有支持的参数（jump、elem除外）
+                    theme: '#1E9FFF'
+                    ,limit: 10  //默认采用10条
+                    ,limits: [10, 30, 50, 100]    // 每页条数[10, 20, 30]等
+                }
+                ,cols:  [ // 表头，标题栏。这里的上下两个中括号一定要分开写，如果写在一起，就被thymeleaf解释为内联表达式了。
+                    [
+                        //{type: 'radio',               fixed: 'left',          hide:true}
+                        //{type: 'checkbox',      fixed: 'left',          hide:false}
+                        {field: 'id',      title: '编号',               hide:true}
+                        ,{field: 'groupId',   title: '组编码',  minWidth:200, sort:false}
+                        ,{field: 'originalName', title: '原始文件名', width:200,  sort:false}
+                        ,{field: 'storageName', title: '存储文件名', width:200,  sort:false}
+                        ,{field: 'filePath',     title: '文件路径', minWidth:200,  sort:false}
+                        ,{field: 'createUserNick', title: '创建者', minWidth:120,  sort:false}
+                        ,{field: 'createTime', title: '创建时间',   minWidth:180,       sort:true}
+                        ,{fixed: 'right', title: '操作', align:'center', width: 100, toolbar: '#toolbarTpl'}
+                    ]
+                ]
+            });
+
+            //监听工具条
+            table.on('tool(table-filter)', function(obj){
+                let row = obj.data;
+                switch (obj.event) {
+                    case 'delete':
+                        layer.confirm('确认删除【' + row.originalName + '】吗？', function(index){
+                            $.post("/sys/file/delete/" + row.id, null, function (result) {
+                                layer.close(index);
+                                mwj.msg(result);
+
+                                // 刷新表格
+                                if(result.code === 0){
+                                    obj.del(); // 删除对应行（tr）的DOM结构，并更新缓存
+                                }
+                            });
+                        });
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+            /**
+             * 重载表格
+             * @param curr 当前页
+             * @param params 参数对象{}
+             */
+            function reloadTable(curr, params) {
+                curr  = curr ? curr : 1;
+                params = params ? params : {};
+                params._csrf = $("meta[name='_csrf']").attr("content");
+                tableIns.reload({
+                    where: params
+                    ,page: {
+                        theme: '#1E9FFF',
+                        curr: curr //重新从第 curr 页开始
+                    }
+                });
+            }
+
+            /* 监听表单提交——查询按钮——重载表格 */
+            form.on('submit(search-filter)', function(data){
+                //console.log(data.elem); //被执行事件的元素DOM对象，一般为button对象
+                //console.log(data.form); //被执行提交的form对象，一般在存在form标签时才会返回
+                //console.log(data.field); //当前容器的全部表单字段，名值对形式：{name: value}
+
+                //执行重载
+                reloadTable(1, data.field);
+                return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+            });
+
+            // 显式渲染，否则select无法被渲染
+            form.render();
+
+        });
+    </script>
+</body>
+
+</html>

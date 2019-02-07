@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>mwj-cms login</title>
+		<!--/** 注意：login.css和bootstrap中某些样式冲突，请勿同时引入 **/-->
+		<link rel="stylesheet" th:href="@{/css/login.css}">
+	</head>
+<body>
+
+	<div class="wrapper">
+		<div class="container">
+			<h1>Welcome</h1>
+			<h3 style="color: #FFB800;">mwj-cms 后台管理系统</h3>
+			<form th:action="@{/login}" method="post">
+				<input name="username" type="text" placeholder="用户名" value="mengweijin">
+				<input name="password" type="password" placeholder="密码" value="123456">
+				<div>
+					<!--/** spring security remember-me, input的name属性必须为remember-me，否则不会生效 **/-->
+					<!--/** 当session失效时，必须手动刷新页面才行，不然数据出不来，暂时弃用 **/-->
+					<input type="checkbox" name="remember-me" title="记住我"> <label>记住我</label>
+				</div>
+                <div th:if="${session.SPRING_SECURITY_LAST_EXCEPTION}">
+                    <img id="captcha" alt="" th:src="@{/kaptcha/renderCode}" />
+                    <input type="text" placeholder="请输入验证码" name="captcha">
+                </div>
+				<button id="login" type="submit">登录</button>
+			</form>
+			<div th:if="${session.SPRING_SECURITY_LAST_EXCEPTION}"
+				 style="color: red;font-weight: bold;"
+				 th:text="${session.SPRING_SECURITY_LAST_EXCEPTION.message}"></div>
+			<div th:if="${param.logout}" style="color: red;font-weight: bold;">
+				退出成功！
+			</div>
+			<div th:if="${param.sessionInvalid}" style="color: red;font-weight: bold;">
+				Session失效！
+			</div>
+		</div>
+
+		<ul class="bg-bubbles">
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+		</ul>
+	</div>
+	<script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+	<script>
+		$(function () {
+			$("#login").on("click", function () {
+				this.attr("disabled", true);
+            });
+
+            //获取新验证码
+            $('#captcha').click(function() {
+                $(this).attr('src', '/kaptcha/renderCode');
+            });
+        });
+	</script>
+</body>
+</html>

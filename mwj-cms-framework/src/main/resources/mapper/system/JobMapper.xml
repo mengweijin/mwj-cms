@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mwj.cms.system.mapper.JobMapper">
+
+    <select id="selectPageVO" resultType="java.util.Map">
+        select
+            j.id,
+            j.name,
+            j.cron,
+            j.job_type_id,
+            j.job_table_id,
+            j.misfire_policy,
+            j.status,
+            j.create_by,
+            j.create_time,
+            j.update_by,
+            j.update_time,
+            j.remark,
+            t.name as job_type_name,
+            uc.nick as create_user_nick,
+            uu.nick as update_user_nick
+        from sys_job j
+        left join sys_user uc on j.create_by=uc.id
+        left join sys_user uu on j.update_by=uu.id
+        left join sys_job_type t on j.job_type_id=t.id
+        <where>
+            <if test="job.id != null and job.id != ''">
+                and j.id = #{job.id}
+            </if>
+            <if test="job.name != null and job.name != ''">
+                and j.name like concat('%',#{job.name},'%')
+            </if>
+            <if test="job.cron != null and job.cron != ''">
+                and j.cron = #{job.cron}
+            </if>
+            <if test="job.jobTypeId != null">
+                and j.job_type_id = #{job.jobTypeId}
+            </if>
+            <if test="job.jobTableId != null">
+                and j.job_table_id = #{job.jobTableId}
+            </if>
+            <if test="job.misfirePolicy != null">
+                and j.misfire_policy = #{job.misfirePolicy}
+            </if>
+            <if test="job.status != null">
+                and j.status = #{job.status}
+            </if>
+            <if test="job.createBy != null">
+                and j.create_by = #{job.createBy}
+            </if>
+            <if test="job.createTime != null">
+                and j.create_time = #{job.createTime}
+            </if>
+            <if test="job.updateBy != null">
+                and j.update_by = #{job.updateBy}
+            </if>
+            <if test="job.updateTime != null">
+                and j.update_time = #{job.updateTime}
+            </if>
+            <if test="job.remark != null and job.remark != ''">
+                and j.remark = #{job.remark}
+            </if>
+        </where>
+    </select>
+</mapper>

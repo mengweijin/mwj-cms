@@ -1,0 +1,88 @@
+# 应用框架配置，所有自定义的配置可以根据情况省略
+app:
+  info:
+    author: Meng Wei Jin
+    name: @project.name@
+    version: @project.version@
+    # 引用maven中的java版本
+    java: @java.version@
+    url: @project.url@
+    blog: https://blog.csdn.net/mmingxiang
+#开发环境配置
+server:
+  #服务端口
+  port: 80
+  servlet:
+    # 项目contextPath
+    context-path: /
+    session:
+      # session失效时间，单位：分钟
+      timeout: 30m
+  tomcat:
+    # tomcat的URI编码
+    uri-encoding: UTF-8
+    # tomcat最大线程数，默认为200
+    max-threads: 800
+    # Tomcat启动初始化的线程数，默认值25
+    min-spare-threads: 30
+#Spring配置
+spring:
+  messages:
+    #国际化资源文件路径
+    basename: i18n/messages
+  jackson:
+    time-zone: GMT+8
+    # 加上这个配置，从前台接收LocalDateTime类型可直接使用@DateTimeFormat注解
+    date-format: yyyy-MM-dd HH:mm:ss
+  profiles:
+    active: test
+  #文件上传
+  servlet:
+    multipart:
+      max-file-size: 30MB
+      max-request-size: 30MB
+  # quartz调度器，参数参考quartz/readme.txt
+  quartz:
+    quartzJobParams-store-type: jdbc
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: DefaultQuartzScheduler
+            instanceId: AUTO
+          jobStore:
+            class: org.quartz.impl.jdbcjobstore.JobStoreTX
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+            tablePrefix: QRTZ_
+            isClustered: true
+            clusterCheckinInterval: 20000
+            misfireThreshold: 60000
+            useProperties: false
+          threadPool:
+            class: org.quartz.simpl.SimpleThreadPool
+            threadCount: 10
+            threadPriority: 5
+            threadsInheritContextClassLoaderOfInitializingThread: true
+# mybatis-plus
+mybatis-plus:
+  # MyBatis Mapper 所对应的 XML 文件位置，如果您在 Mapper 中有自定义方法（XML 中有自定义实现），需要进行该配置，告诉 Mapper 所对应的 XML 文件位置。
+  mapper-locations: classpath*:/mapper/**/*.xml
+  # 配置扫描通用枚举，支持统配符 * 或者 ; 分割，如果配置了该属性，会将路径下的枚举类进行注入，让实体类字段能够简单快捷的使用枚举属性
+  type-enums-package: com.mwj.cms.common.enums
+  global-config:
+    # 该配置不建议在生产环境打开！
+    refresh: true
+    db-config:
+      # 是否开启 LIKE 查询，即根据 entity 自动生成的 where 条件中 String 类型字段 是否使用 LIKE，默认不开启。
+      column-like: false
+      # 全局默认主键类型。默认值ID_WORKER
+      id-type: id_worker
+  configuration:
+    # MyBatis 在使用 resultMap 来映射查询结果中的列，如果查询结果中包含空值的列，则 MyBatis 在映射的时候，不会映射这个字段，
+    # 这就导致在调用到该字段的时候由于没有映射，取不到而报空指针异常。
+    call-setters-on-nulls: true
+    # 对JavaBean中属性开启自动驼峰命名规则（camel case）映射，默认对返回类型为Map的对象的key不起作用，所以需要使用自定义MybatisMapWrapperFactory类来处理
+    map-underscore-to-camel-case: true
+# Web Service
+cxf:
+  path: /services
