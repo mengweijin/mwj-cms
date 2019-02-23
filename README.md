@@ -7,6 +7,10 @@ mwj-cms后台管理系统 是个人为防止知识的遗忘，总要做点什么
 
 温馨提示： 个人拙作，请文明用语，愿大家共同进步！如果您觉得还不错就给个小星星吧O(∩_∩)O
 
+码云地址：https://gitee.com/mengweijin/mwj-cms
+
+技术交流：mengweijin.work@foxmail.com
+
 在线演示：[http://60.205.177.13/](http://60.205.177.13/)
 
 

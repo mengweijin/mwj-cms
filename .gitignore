@@ -94,3 +94,4 @@ fabric.properties
 /files
 /logs
 /mwj-cms-admin/src/main/resources/application-test.yml
+/mwj-cms-admin/src/main/resources/application-prod.yml
