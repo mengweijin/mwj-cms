@@ -155,7 +155,7 @@ public interface Const {
     /**
      * 系统字符集编码
      */
-    String SYSTEM_DEFAULT_CHARSET = Charset.defaultCharset().name();
+    String CHARSET_DEFAULT = Charset.defaultCharset().name();
 
     /**
      * java项目根路径
