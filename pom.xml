@@ -11,7 +11,7 @@
     <version>1.0</version>
 
     <name>${project.artifactId}</name>
-    <url>http://60.205.177.13</url>
+    <url>https://mengweijin.gitee.io/</url>
 
     <modules>
         <module>mwj-cms-admin</module>

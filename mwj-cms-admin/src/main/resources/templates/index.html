@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head th:include="include :: header"></head>
+<style>
+    .mwj-padl {
+        padding-left: 20px !important;
+    }
+    .mwj-ico{
+        width: 50px;
+        height: 50px;
+        margin-right: 10px;
+    }
+</style>
+<body>
+    <div class="layui-layout layui-layout-admin">
+        <div class="layui-header">
+            <div class="layui-logo" style="cursor: pointer;" onclick="javascript:window.location.href='/admin'">
+                <img src="image/favicon_64_64.ico">
+                <span>mwj-cms管理系统</span>
+            </div>
+            <!--/** 头部区域（可配合layui已有的水平导航） **/-->
+            <ul class="layui-nav layui-layout-left" th:with="headerMenuList=${@menuService.getHeaderMenu()}">
+                <li class="layui-nav-item">
+                    <a href="/">
+                        <i class="fas fa-home mwj-mgr" style="font-size: 24px;"></i>
+                        <span>主页</span>
+                    </a>
+                </li>
+
+                <li class="layui-nav-item"
+                    th:each="menu : ${headerMenuList}" th:attr="data-sec-authorize=@{'hasRole(\'' + ${menu.permission} + '\')'}">
+                    <a th:href="@{${menu.url}}" target="_blank"
+                       th:utext="'<i class=\''+ ${menu.icon} +' mwj-mgr\' style=\'font-size: 24px;\'></i>' + ${menu.name}">
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="layui-nav layui-layout-right">
+                <li class="layui-nav-item">
+                    <a href="javascript:">
+                        <img src="/image/avatar.jpg" class="layui-nav-img">
+                        <span th:text="${session.user.nick}"></span>
+                    </a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:" id="userDetail">基本资料</a></dd>
+                        <dd><a href="javascript:" id="updatePassword">修改密码</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:">
+                        <form th:action="@{/logout}" method="post">
+                            <button type="submit"
+                                    style="background:transparent;color: rgba(255,255,255,.7);border: none;cursor: pointer;">
+                                <i class="fas fa-sign-out-alt mwj-mgr"></i>退出
+                            </button>
+                        </form>
+                    </a>
+                    <!--<a href="/logout"><i class="fas fa-sign-out-alt mwj-mgr"></i>退出</a>-->
+                </li>
+            </ul>
+        </div>
+
+        <div class="layui-side layui-bg-black" id="sideNavTree">
+            <div class="layui-side-scroll">
+                <!--/** 左侧导航区域（可配合layui已有的垂直导航）layui-nav-itemed可默认展开下拉列表 **/-->
+                <ul class="layui-nav layui-nav-tree" th:with="sideMenuList=${@menuService.getSideMenu()}">
+
+                    <li class="layui-nav-item layui-nav-itemed"
+                        th:each="menu : ${sideMenuList}"
+                        th:attr="data-sec-authorize=@{'hasRole(\'' + ${menu.permission} + '\')'}">
+                        <a th:href="${menu.menuType.toString() == 'MENU'} ? @{'javascript:mwj.loadPage(\'#content\', \'' + ${menu.url} + '\')'} : 'javascript:;'"
+                           th:utext="'<i class=\''+ ${menu.icon} +' mwj-mgr\'></i>' + ${menu.name}"></a>
+
+                        <dl class="layui-nav-child mwj-padl"
+                            th:if="${not #lists.isEmpty(menu.children)}">
+                            <dd th:each="children : ${menu.children}"
+                                th:attr="data-sec-authorize=@{'hasRole(\'' + ${children.permission} + '\')'}">
+                                <a th:href="@{'javascript:mwj.loadPage(\'#content\', \'' + ${children.url} + '\')'}"
+                                   th:utext="'<i class=\''+ ${children.icon} +' mwj-mgr\'></i>' + ${children.name}">
+                                </a>
+                            </dd>
+                        </dl>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+
+        <!--/** 内容主体区域 **/-->
+        <div id="content" class="layui-body" style="padding: 15px;">
+            <div class="row">
+                <div class="col-md-2 col-md-offset-3">
+                    <div style="background-color: #f2f2f2;">
+                        <a href="https://gitee.com/mengweijin" target="_blank">
+                            <img th:src="@{/image/index/favicon_gitee.ico}" class="mwj-ico"/>
+                            <span style="font-size: 20px;">码云</span>
+                        </a>
+                    </div>
+
+                </div>
+                <div class="col-md-2 col-md-offset-3">
+                    <div style="background-color: #f2f2f2;">
+                        <a href="https://github.com/mengweijin" target="_blank">
+                            <img th:src="@{/image/index/favicon_github.ico}" class="mwj-ico"/>
+                            <span style="font-size: 20px;">GitHub</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-2 col-md-offset-3">
+                    <div style="background-color: #f2f2f2;">
+                        <a href="https://hub.docker.com/u/mengweijin/" target="_blank">
+                            <img th:src="@{/image/index/favicon_docker.png}" class="mwj-ico"/>
+                            <span style="font-size: 20px;">Docker Hub</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-2 col-md-offset-3">
+                    <div style="background-color: #f2f2f2;">
+                        <a href="https://blog.csdn.net/mmingxiang" target="_blank">
+                            <img th:src="@{/image/index/favicon_csdn.ico}" class="mwj-ico"/>
+                            <span style="font-size: 20px;">CSDN博客</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-2 col-md-offset-3">
+                    <div style="background-color: #f2f2f2;">
+                        <a href="http://changba.com/u/90330498" target="_blank">
+                            <img th:src="@{/image/index/favicon_changba.png}" class="mwj-ico"/>
+                            <span style="font-size: 20px;">娱乐</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <blockquote class="layui-elem-quote" style="margin: 15px 0;">
+                        <p>
+                            <span style="font-weight: bold;">mwj-cms后台管理系统</span>
+                            是个人为防止知识的遗忘，总要做点什么来留住一些技术性的东西，同时，也方便查漏补缺，
+                            于是做了这样一个东西，尽管同类型开源作品数不胜数，但只有自己亲自写下来，才能记忆深刻。
+                        </p>
+                        <p>
+                            <span style="font-weight: bold;">温馨提示：</span>
+                            个人拙作，愿大家共同进步！
+                        </p>
+                    </blockquote>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <blockquote class="layui-elem-quote" style="margin-bottom: -10px;">
+                        <p style="font-weight: bold;">技术选型：</p>
+                    </blockquote>
+                    <table class="layui-table">
+                        <colgroup>
+                            <col width="150">
+                            <col width="200">
+                            <col>
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th>分类</th>
+                            <th>名称</th>
+                            <th>说明</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>部署容器</td>
+                            <td>Docker</td>
+                            <td>使用dockerfile文件构建docker镜像后部署应用jar到docker容器</td>
+                        </tr>
+                        <tr>
+                            <td>接口文档</td>
+                            <td>Swagger、Swagger-ui</td>
+                            <td>Controller接口API说明文档及接口测试</td>
+                        </tr>
+                        <tr>
+                            <td>应用基础框架</td>
+                            <td>Spring Boot</td>
+                            <td>Spring Boot 2.0以上版本，使用JDK 1.8以上版本</td>
+                        </tr>
+                        <tr>
+                            <td>安全框架</td>
+                            <td>Spring Security</td>
+                            <td>主要包含用户认证、菜单授权、xss过滤、csrf过滤等</td>
+                        </tr>
+                        <tr>
+                            <td>模板引擎</td>
+                            <td>Thymeleaf</td>
+                            <td>前台HTML页面渲染模板引擎</td>
+                        </tr>
+                        <tr>
+                            <td>缓存框架</td>
+                            <td>EHCache 3</td>
+                            <td>应用缓存框架，目前只在用户认证处使用</td>
+                        </tr>
+                        <tr>
+                            <td>ORM框架</td>
+                            <td>Mybatis、Mybatis-plus</td>
+                            <td>操作数据库，方便的增删改查操作</td>
+                        </tr>
+                        <tr>
+                            <td>数据源</td>
+                            <td>Druid</td>
+                            <td>数据源配置、监控，可配置多个数据源</td>
+                        </tr>
+                        <tr>
+                            <td>应用服务器</td>
+                            <td>Apache Tomcat</td>
+                            <td>应用服务器</td>
+                        </tr>
+                        <tr>
+                            <td>数据库</td>
+                            <td>MySQL 8.0</td>
+                            <td>MySQL 8.0数据库，使用docker容器运行</td>
+                        </tr>
+                        <tr>
+                            <td>数据库版本控制</td>
+                            <td>Flyway</td>
+                            <td>统一数据库脚本升级管理</td>
+                        </tr>
+                        <tr>
+                            <td>Web Service框架</td>
+                            <td>Apache CXF</td>
+                            <td>使用CXF发布和调用Web Service服务</td>
+                        </tr>
+                        <tr>
+                            <td>调度框架</td>
+                            <td>Quartz</td>
+                            <td>定时调度任务框架</td>
+                        </tr>
+                        <tr>
+                            <td>发送邮件</td>
+                            <td>Javax Mail</td>
+                            <td>应用发送邮件服务</td>
+                        </tr>
+                        <tr>
+                            <td>压缩工具</td>
+                            <td>7z</td>
+                            <td>压缩/解压缩工具，全格式支持</td>
+                        </tr>
+                        <tr>
+                            <td>工具类库</td>
+                            <td>apache commons系列、Google Guava、fastJSON、JSoup、hutool</td>
+                            <td>常用工具类库，避免重复造轮子</td>
+                        </tr>
+                        <tr>
+                            <td>验证码</td>
+                            <td>kaptcha</td>
+                            <td>生成验证码图片</td>
+                        </tr>
+                        <tr>
+                            <td>前端框架/组件</td>
+                            <td>jquery、layui、bootstrap</td>
+                            <td>jquery前端js库；layui前端UI库；bootstrap前端css库。</td>
+                        </tr>
+                        <tr>
+                            <td>树组件</td>
+                            <td>zTree</td>
+                            <td>前端树组件</td>
+                        </tr>
+                        <tr>
+                            <td>图表组件</td>
+                            <td>echarts</td>
+                            <td>各种饼图、柱状图等图表组件</td>
+                        </tr>
+                        <tr>
+                            <td>字体图标</td>
+                            <td>Font Awesome、Glyphicons、Layui icon</td>
+                            <td>支持Font Awesome、Glyphicons、Layui字体图标</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <blockquote class="layui-elem-quote">
+                                <p style="font-weight: bold;">
+                                    技术交流：<span th:text="${@appSupport.getAuthor()}"></span>
+                                    <a target="_blank"
+                                       href="http://wpa.qq.com/msgrd?v=3&uin=1002284406&site=qq&menu=yes">
+                                        <i class="layui-icon layui-icon-login-qq mwj-margin"
+                                           style="color: #1E9FFF;"></i>
+                                    </a>
+                                </p>
+                            </blockquote>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <blockquote class="layui-elem-quote">
+                                <p style="font-weight: bold;">通知公告：</p>
+                            </blockquote>
+                            <div class="layui-collapse" th:with="noticeList=${@noticeService.getLatestNotice()}">
+                                <div class="layui-colla-item" th:each="notice, noticeStat : ${noticeList}">
+                                    <h2 class="layui-colla-title">
+                                        <span th:text="${notice.title}"></span>
+                                        <span class="layui-layout-right"
+                                              style="margin-right: 15px;"
+                                              th:text="${#temporals.format(notice.createTime, 'yyyy-MM-dd HH:mm:ss')}">
+                                </span>
+                                    </h2>
+                                    <div th:class="${noticeStat.first} ? 'layui-colla-content layui-show' : 'layui-colla-content'"
+                                         th:utext="${notice.content}"></div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!--/** 底部固定区域 **/-->
+        <div class="layui-footer" style="text-align: center">
+            联系作者
+            <a target="_blank" href="http://wpa.qq.com/msgrd?v=3&uin=1002284406&site=qq&menu=yes" class="mwj-mgr">
+                <i class="layui-icon layui-icon-login-qq" style="color: #1E9FFF;"></i>
+            </a>
+            The MIT License (MIT) Copyright © 2018~<span id="nowYear"></span> <span th:text="${@appSupport.getAuthor()}"></span>
+        </div>
+    </div>
+
+    <div th:include="include::footer"></div>
+    <script>
+        $(function () {
+            $("#nowYear").text(new Date().getFullYear());
+
+            $("#userDetail").click(function () {
+                mwj.info("功能开发中......");
+            });
+
+            $("#updatePassword").click(function () {
+                layer.open({
+                    type: 2
+                    ,title: "修改密码"
+                    ,shadeClose: false
+                    ,shade: [0.5, "#393D49"]
+                    ,maxmin: false
+                    ,area: ["600px", "330px"]
+                    ,resize: false
+                    ,content: "/sys/user/updatePassword"
+                });
+            });
+
+        });
+    </script>
+</body>
+
+</html>

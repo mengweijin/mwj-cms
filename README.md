@@ -1,17 +1,15 @@
 # mwj-cms
 
 #### 介绍
-mwj-cms后台管理系统(孟伟进后台管理系统)
+mwj-cms后台管理系统(后台管理系统)
 
 mwj-cms后台管理系统 是个人为防止知识的遗忘，总要做点什么来留住一些技术性的东西，同时，也方便查漏补缺， 于是做了这样一个东西，尽管同类型开源作品数不胜数，但只有自己亲自写下来，才能记忆深刻。
-
-温馨提示： 个人拙作，请文明用语，愿大家共同进步！如果您觉得还不错就给个小星星吧O(∩_∩)O
 
 码云地址：https://gitee.com/mengweijin/mwj-cms
 
 技术交流：mengweijin.work@foxmail.com
 
-在线演示：[http://60.205.177.13/](http://60.205.177.13/)
+在线演示：[https://mengweijin.gitee.io/](https://mengweijin.gitee.io/)
 
 
 #### 安装部署教程
