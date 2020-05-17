@@ -35,12 +35,18 @@ spring:
     # 加上这个配置，从前台接收LocalDateTime类型可直接使用@DateTimeFormat注解
     date-format: yyyy-MM-dd HH:mm:ss
   profiles:
-    active: prod
+    active: h2
   #文件上传
   servlet:
     multipart:
       max-file-size: 30MB
       max-request-size: 30MB
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations:
+      - classpath:db/h2
+      # - classpath:db/mysql
   # quartz调度器，参数参考quartz/readme.txt
   quartz:
     quartzJobParams-store-type: jdbc

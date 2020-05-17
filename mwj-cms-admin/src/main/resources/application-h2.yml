@@ -1,0 +1,121 @@
+# 调试模式。核心Logger（包含嵌入式容器、hibernate、spring）会输出更多内容，但是你自己应用的日志并不会输出为DEBUG级别。
+debug: true
+#日志配置
+logging:
+  file: logs/app.log
+  level:
+    root: info
+    com.mwj: debug
+    org.springframework: info
+    org.spring.springboot.dao: debug
+# Spring Boot的actuator（健康监控）功能，访问：http://localhost:80/actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        # 要暴露出来的接口，可配置：health(默认), info（默认）, * 代表所有
+        include: ["*"]
+        exclude: ["trace"]
+  server:
+    port: 80
+    #servlet:
+      # 默认即为：/actuator
+      #context-path: /actuator
+spring:
+  devtools:
+    restart:
+      #热部署开关, 和mybatis-plus枚举扫描冲突，这里不开启
+      enabled: false
+  thymeleaf:
+    #thymeleaf的默认配置
+    #prefix: classpath:/templates/
+    #suffix: .html
+    #mode: HTML5
+    #encoding: UTF-8
+    #content-type: text/html
+    # 禁用缓存。Thymeleaf缓存在开发过程中，肯定是不行的，那么就要在开发的时候把缓存关闭
+    cache: false
+    #默认错误页面位置：classpath:/templates/error，错误页面以错误编码命名，如404.html，或者5xx.html（表示匹配所有以5开头的错误http状态）
+  mail:
+    host: smtp.qq.com
+    username: mengweijin.work@foxmail.com
+    # 注意：在spring.mail.password处的值是需要在邮箱设置里面生成的授权码，这个不是真实的密码。
+    password: aaaaaaaaaaaaaaa
+    protocol: smtp
+    port: 25
+    default-encoding: UTF-8
+    # 如果不设置tls, 会报503错误
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+  h2:
+    console:
+      # 是否允许网页访问，默认false
+      enabled: true
+      # h2数据库的访问路径：http://localhost:8080/h2（默认为/h2-console）
+      path: /h2
+      settings:
+        # 是否允许从其他地方访问，还是只允许从本地访问
+        web-allow-others: true
+  # 数据源配置。Spring Boot 2.X 版本不再支持配置继承，多数据源的话每个数据源的所有配置都需要单独配置，否则配置不会生效
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    # 高版本的mysql驱动包路径发生了改变
+    driverClassName: org.h2.Driver
+    druid:
+      # 主库数据源
+      master:
+        # MySQL在高版本(5.7以上)需要指明是否进行SSL连接
+        url: jdbc:h2:file:./h2/test;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL
+        username: sa
+        password:
+      # 从库数据源
+      slave:
+        # 从数据源开关/默认关闭
+        enabled: false
+        url: jdbc:h2:file:./h2/test;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL
+        username: sa
+        password:
+      # 初始连接数
+      initial-size: 10
+      # 最大连接池数量
+      max-active: 100
+      # 最小连接池数量
+      min-idle: 10
+      # 配置获取连接等待超时的时间
+      max-wait: 60000
+      # 打开PSCache，并且指定每个连接上PSCache的大小
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      timeBetweenEvictionRunsMillis: 60000
+      # 配置一个连接在池中最小生存的时间，单位是毫秒
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      stat-view-servlet:
+        # 是否启用StatViewServlet默认值true
+        enabled: true
+        # http://localhost:8080/druid/index.html可访问监控页面
+        url-pattern: /druid/*
+        # 允许清空统计数据
+        reset-enable: true
+        # druid监控页面登陆验证用户名和密码
+        #login-username: druid
+        #login-password: druid
+        # druid允许访问的白名单
+        #allow: 127.0.0.1
+      filter:
+        stat:
+          sysLog-slow-sql: true
+          slow-sql-millis: 1000
+          merge-sql: false
+        wall:
+          config:
+            multi-statement-allow: true
