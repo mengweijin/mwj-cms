@@ -35,7 +35,7 @@ spring:
     # 加上这个配置，从前台接收LocalDateTime类型可直接使用@DateTimeFormat注解
     date-format: yyyy-MM-dd HH:mm:ss
   profiles:
-    active: h2
+    active: dev
   #文件上传
   servlet:
     multipart:
@@ -45,8 +45,8 @@ spring:
     enabled: true
     baseline-on-migrate: true
     locations:
-      - classpath:db/h2
-      # - classpath:db/mysql
+      #- classpath:db/h2
+      - classpath:db/mysql
   # quartz调度器，参数参考quartz/readme.txt
   quartz:
     quartzJobParams-store-type: jdbc

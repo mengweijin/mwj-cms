@@ -61,14 +61,14 @@ spring:
       # 主库数据源
       master:
         # MySQL在高版本(5.7以上)需要指明是否进行SSL连接
-        url: jdbc:mysql://localhost:3306/myboot_master?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
+        url: jdbc:mysql://localhost:3306/mwj_cms?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
         username: root
         password: root
       # 从库数据源
       slave:
         # 从数据源开关/默认关闭
         enabled: false
-        url: jdbc:mysql://localhost:3306/myboot_slave?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
+        url: jdbc:mysql://localhost:3306/mwj_cms?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
         username: 
         password:
       # 初始连接数

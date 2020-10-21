@@ -90,8 +90,10 @@ fabric.properties
 # Editor-based Rest Client
 .idea/httpRequests
 
-/.idea
-/files
-/logs
+/.idea/
+/files/
+/logs/
+/h2/
 /mwj-cms-admin/src/main/resources/application-test.yml
 /mwj-cms-admin/src/main/resources/application-prod.yml
+*.iml
