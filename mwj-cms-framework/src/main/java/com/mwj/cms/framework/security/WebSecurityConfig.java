@@ -45,7 +45,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         // 授权请求
         http.authorizeRequests()
             // 匹配器 permitAll()表示允许所有相匹配的请求访问 /**表示可以跨文件夹
-            .antMatchers("/", "/home", "/kaptcha/renderCode").permitAll()
+            .antMatchers("/kaptcha/renderCode").permitAll()
             // 只能管理员访问, hasRole("ADMIN")其实security判断的时候根据ROLE_ADMIN来判断的，所以sys_role表存储的时候需要存储为ROLE_ADMIN形式。
             .antMatchers("/druid/**").hasRole("druid")
             .antMatchers("/actuator/**").hasRole("actuator")
