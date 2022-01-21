@@ -30,7 +30,12 @@ public class TaoBaoIpInfoService {
      * @throws Exception
      */
     public String getLocationByIp(String ip) throws Exception {
-        return getLocationByIp(ip, false);
+        try{
+            return getLocationByIp(ip, false);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return "Unknown";
     }
 
     /**
