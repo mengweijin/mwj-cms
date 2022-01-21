@@ -14,11 +14,15 @@ mwj-cms后台管理系统 是个人为防止知识的遗忘，总要做点什么
 
 #### 安装部署教程
 ```
-1. 准备正常的mysql数据库
-2. 修改application.yml中的spring.profiles.active为dev
-3. 修改application-dev.yml中mysql数据源的url,username,password
-4. 部署jar mwj-cms-admin-1.0.jar到服务器
-5. 启动成功后，默认使用80端口，访问http://服务器ip/
+1. 部署jar mwj-cms-admin-1.0.jar到服务器
+2. 启动成功后，默认使用80端口，访问 http://{ip地址}:80/
+3. 默认使用 H2 数据库（仅作为测试）。
+```
+Docker 部署：
+```bash
+docker run --name mwj-cms -d -p 9004:80 registry.cn-hangzhou.aliyuncs.com/mengweijin/mwj-cms:latest
+
+# 访问：http://{ip地址}:9004/
 ```
 
 #### 目录结构
