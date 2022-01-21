@@ -1,5 +1,7 @@
 SET FOREIGN_KEY_CHECKS=0;
-
+-------------------------------
+-- 和 MySQL 脚本的差别为：所有的 text 类型的列，都改为了 varchar，避免程序发生问题。
+-------------------------------
 -- ----------------------------
 -- Table structure for sys_config
 -- ----------------------------
@@ -172,7 +174,7 @@ CREATE TABLE sys_log (
   id bigint(20) NOT NULL AUTO_INCREMENT COMMENT '日志主键',
   title varchar(255) DEFAULT NULL COMMENT '操作模块',
   url varchar(255) DEFAULT NULL COMMENT '请求url',
-  req_param text COMMENT '请求参数 JSON格式',
+  req_param varchar(4096) COMMENT '请求参数 JSON格式',
   method varchar(128) DEFAULT NULL COMMENT '请求方法',
   type int(4) DEFAULT NULL COMMENT '日志类型枚举LogType',
   operator varchar(32) DEFAULT NULL COMMENT '操作人员',
@@ -535,7 +537,7 @@ drop table if exists sys_notice;
 create table sys_notice (
   id 		int(4) 		    not null auto_increment    comment 'ID',
   title 		varchar(50) 	not null 	comment '标题',
-  content    text         comment '内容',
+  content    varchar(4096)         comment '内容',
   status 			int(4) 		default 0 		comment '状态Status枚举（0正常 1关闭）',
   create_by     int(11)  default null                   comment '创建者',
   create_time 	datetime NULL DEFAULT CURRENT_TIMESTAMP comment '创建时间',

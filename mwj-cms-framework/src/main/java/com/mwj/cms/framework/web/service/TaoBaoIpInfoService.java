@@ -30,12 +30,7 @@ public class TaoBaoIpInfoService {
      * @throws Exception
      */
     public String getLocationByIp(String ip) throws Exception {
-        try{
-            return getLocationByIp(ip, false);
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-        return "Unknown";
+        return getLocationByIp(ip, false);
     }
 
     /**
@@ -49,28 +44,33 @@ public class TaoBaoIpInfoService {
      * @return
      */
     public String getLocationByIp(String ip, boolean onlyCity) throws Exception {
-        if("127.0.0.1".equals(ip) || "0:0:0:0:0:0:0:1".equals(ip)){
-            return "localhost";
-        }
-        String address = "Unknown";
+        try{
+            if("127.0.0.1".equals(ip) || "0:0:0:0:0:0:0:1".equals(ip)){
+                return "localhost";
+            }
+            String address = "Unknown";
 
-        LinkedHashMap<String, String> paramMap = new LinkedHashMap<>();
-        paramMap.put("ip", ip);
-        String rspStr = interfaceService.execute("ipInfoByTaoBao", JSONObject.toJSONString(paramMap));
+            LinkedHashMap<String, String> paramMap = new LinkedHashMap<>();
+            paramMap.put("ipAddr", ip);
+            String rspStr = interfaceService.execute("ipInfoByTaoBao", JSONObject.toJSONString(paramMap));
 
-        if (StringUtils.isEmpty(rspStr)) {
-            logger.error("获取IP位置异常:" + ip);
-            return address;
+            if (StringUtils.isEmpty(rspStr)) {
+                logger.error("获取IP位置异常:" + ip);
+                return address;
+            }
+            JSONObject jsonObject = JSONObject.parseObject(rspStr);
+            JSONObject data = jsonObject.getObject("data", JSONObject.class);
+            String region = data.getString("region");
+            String city = data.getString("city");
+            if(onlyCity){
+                return  city;
+            } else {
+                address = region + Const.SPACE + city;
+                return address;
+            }
+        } catch (Exception e) {
+            // ignore
         }
-        JSONObject jsonObject = JSONObject.parseObject(rspStr);
-        JSONObject data = jsonObject.getObject("data", JSONObject.class);
-        String region = data.getString("region");
-        String city = data.getString("city");
-        if(onlyCity){
-            return  city;
-        } else {
-            address = region + Const.SPACE + city;
-            return address;
-        }
+        return "Unknown";
     }
 }

@@ -7,7 +7,7 @@ logging:
     root: info
     com.mwj: debug
     org.springframework: info
-    org.spring.springboot.dao: debug
+    org.spring.springboot.dao: info
 # Spring Boot的actuator（健康监控）功能，访问：http://localhost:80/actuator
 management:
   endpoints:
