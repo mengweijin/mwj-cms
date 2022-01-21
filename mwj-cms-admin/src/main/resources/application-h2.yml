@@ -1,5 +1,5 @@
 # 调试模式。核心Logger（包含嵌入式容器、hibernate、spring）会输出更多内容，但是你自己应用的日志并不会输出为DEBUG级别。
-debug: true
+debug: false
 #日志配置
 logging:
   file: logs/app.log
@@ -52,6 +52,12 @@ spring:
           starttls:
             enable: true
             required: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations:
+      - classpath:db/h2
+      #- classpath:db/mysql
   h2:
     console:
       # 是否允许网页访问，默认false
@@ -70,7 +76,7 @@ spring:
       # 主库数据源
       master:
         # MySQL在高版本(5.7以上)需要指明是否进行SSL连接
-        url: jdbc:h2:file:./h2/test;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL
+        url: jdbc:h2:file:./h2/mwjcms;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL
         username: sa
         password:
       # 从库数据源

@@ -48,6 +48,10 @@ public class LogService extends ServiceImpl<LogMapper, SysLog> {
                     .map(map -> {
                         map.put("type", LogType.getDesc(String.valueOf(map.get("type"))));
                         map.put("status", ResultStatus.getDesc(String.valueOf(map.get("status"))));
+                        // 由于数据库保存的 reqParam 是字符串类型的 JSON，在 H2 环境下，MyBatis 查出来会被转成 NClobProxyImpl.class 类型的值。
+                        // 从而导致 jackson 无法序列化而抛出异常，因此这里转一下（临时解决方案）
+                        // 在 MySQL 下是正常的。
+                        map.put("reqParam", String.valueOf(map.get("reqParam")));
                         return map;
                     })
                     .collect(Collectors.toList());

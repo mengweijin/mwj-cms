@@ -64,7 +64,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .xssProtection().xssProtectionEnabled(true);
 
         // 将我们自定义的过滤器，配置到UsernamePasswordAuthenticationFilter之前
-        http.addFilterBefore(captchaFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new CaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
 
         // 定义当需要用户登录时候，转到的登录页面。
         http.formLogin().loginPage("/login").permitAll();
@@ -137,15 +137,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public DefaultLogoutSuccessHandler defaultLogoutSuccessHandler(){
         return new DefaultLogoutSuccessHandler();
-    }
-
-    /**
-     * 自定义验证码过滤器
-     * @return
-     */
-    @Bean
-    public CaptchaFilter captchaFilter() {
-        return new CaptchaFilter();
     }
 
 }

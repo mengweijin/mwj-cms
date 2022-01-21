@@ -11,10 +11,8 @@ import com.mwj.cms.system.entity.LoginLog;
 import com.mwj.cms.system.entity.SysLog;
 import com.mwj.cms.system.service.LogService;
 import com.mwj.cms.system.service.LoginLogService;
-import com.mwj.cms.system.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
@@ -39,9 +37,6 @@ public class AsyncFactory {
 
     private static final AsyncResult<String> asyncResult = new AsyncResult<>(Const.SUCCESS);
 
-    @Autowired
-    private TaoBaoIpInfoService taoBaoIpInfoService;
-
     /**
      * 登录日志记录
      * @param loginLog 日志信息
@@ -51,6 +46,7 @@ public class AsyncFactory {
     public Future<String> addLoginLog(final LoginLog loginLog, HttpServletRequest request) {
         try{
             final UserAgent userAgent = ServletUtils.getUserAgent(request);
+            TaoBaoIpInfoService taoBaoIpInfoService = SpringUtils.getBean(TaoBaoIpInfoService.class);
             loginLog.setLoginLocation(taoBaoIpInfoService.getLocationByIp(loginLog.getIp()))
                     .setBrowser(userAgent.getBrowser().getName())
                     .setOs(userAgent.getOs().getName());
@@ -74,6 +70,7 @@ public class AsyncFactory {
      */
     public Future<String> addOperateLog(final SysLog sysLog, HttpServletRequest request) {
         try{
+            TaoBaoIpInfoService taoBaoIpInfoService = SpringUtils.getBean(TaoBaoIpInfoService.class);
             sysLog.setOperLocation(taoBaoIpInfoService.getLocationByIp(ServletUtil.getClientIP(request)));
             LogService logService = SpringUtils.getBean(LogService.class);
             logService.save(sysLog);
