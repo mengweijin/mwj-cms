@@ -35,7 +35,7 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseBody
     ResponseEntity handleException(AccessDeniedException e) {
         logger.warn(e.getMessage(), e);
-        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(e.getMessage(), null, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler({
@@ -50,7 +50,7 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
     ResponseEntity handleException(HttpServletRequest request, Throwable e) {
         logger.error(e.getMessage(), e);
         HttpStatus status = getStatus(request);
-        return new ResponseEntity<>(status);
+        return new ResponseEntity<>(e.getMessage(), null, status);
     }
 
     /**
