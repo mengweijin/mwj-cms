@@ -29,7 +29,10 @@ ARG JAR_ARTIFACT_ID='mwj-cms-admin'
 ARG JAR_VERSION='1.0'
 ARG JAR_NAME=${JAR_ARTIFACT_ID}-${JAR_VERSION}.jar
 
-RUN mkdir /app
+# 设置镜像时区为东八区时区，上海
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && mkdir /app
+
 COPY ${JAR_NAME} /app/application.jar
 
 RUN bash -c 'touch /app/application.jar'
