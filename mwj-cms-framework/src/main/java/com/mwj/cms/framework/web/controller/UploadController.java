@@ -2,9 +2,9 @@ package com.mwj.cms.framework.web.controller;
 
 import cn.hutool.core.util.IdUtil;
 import com.mwj.cms.common.constant.Const;
+import com.mwj.cms.common.enums.LogType;
 import com.mwj.cms.common.util.IdUtils;
 import com.mwj.cms.framework.log.Log;
-import com.mwj.cms.common.enums.LogType;
 import com.mwj.cms.framework.util.ServletUtils;
 import com.mwj.cms.framework.web.entity.Result;
 import com.mwj.cms.system.entity.SysFile;
@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -26,6 +27,7 @@ import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.Pattern;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -39,6 +41,7 @@ import java.util.List;
 /**
  * @author Meng Wei Jin
  **/
+@Validated
 @Api(description = "文件上传接口")
 @Controller
 public class UploadController extends BaseController {
@@ -58,6 +61,12 @@ public class UploadController extends BaseController {
      */
     public static final String DEFAULT_MODULE = "files";
 
+    /**
+     * ^\w*$ 字母数字下划线
+     * @param request
+     * @param module
+     * @return
+     */
     @ApiOperation(value = "文件上传")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "module", value = "模块名称，以此决定上传到哪个目录下")
@@ -66,6 +75,7 @@ public class UploadController extends BaseController {
     @PostMapping("upload")
     @ResponseBody
     public Result<String> upload(HttpServletRequest request,
+                                 @Pattern(regexp = "^\\w*$")
                                  @RequestParam(value = "module", defaultValue = DEFAULT_MODULE) String module) {
         try {
             ServletContext servletContext = request.getSession().getServletContext();
