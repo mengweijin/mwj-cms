@@ -20,7 +20,7 @@
 				<div>
 					<!--/** spring security remember-me, input的name属性必须为remember-me，否则不会生效 **/-->
 					<!--/** 当session失效时，必须手动刷新页面才行，不然数据出不来，暂时弃用 **/-->
-					<input type="checkbox" name="remember-me" title="记住我"> <label>记住我</label>
+<!--					<input type="checkbox" name="remember-me" title="记住我"> <label>记住我</label>-->
 				</div>
                 <div th:if="${session.SPRING_SECURITY_LAST_EXCEPTION}">
                     <img id="captcha" alt="" th:src="@{/kaptcha/renderCode}" />
